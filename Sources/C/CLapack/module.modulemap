@@ -1,0 +1,5 @@
+module CLapack  {
+    umbrella header "lapacke.h"
+    link "lapack"
+}
+

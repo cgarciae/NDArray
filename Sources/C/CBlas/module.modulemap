@@ -1,0 +1,5 @@
+module CBlas  {
+    umbrella header "cblas.h"
+    link "blas"
+}
+
