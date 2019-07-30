@@ -29,20 +29,20 @@ final class NDArrayTests: XCTestCase {
         XCTAssert(c == a.map { $0 * 2 })
     }
 
-    func testElementWiseApplyParallelBenchmark() {
-        let a = Array(1 ... 20_000_000)
-        let b = Array(1 ... 20_000_000)
+    // func testElementWiseApplyParallelBenchmark() {
+    //     let a = Array(1 ... 20_000_000)
+    //     let b = Array(1 ... 20_000_000)
 
-        let timeParallel = timeIt(repetitions: 1) {
-            _ = elementWiseInParallel(a, b, apply: +)
-        }
-        let timeSerial = timeIt(repetitions: 1) {
-            _ = elementWise(a, b, apply: +)
-        }
+    //     let timeParallel = timeIt(repetitions: 1) {
+    //         _ = elementWiseInParallel(a, b, apply: +)
+    //     }
+    //     let timeSerial = timeIt(repetitions: 1) {
+    //         _ = elementWise(a, b, apply: +)
+    //     }
 
-        print("time parallel:", timeParallel)
-        print("time serial:", timeSerial)
-    }
+    //     print("time parallel:", timeParallel)
+    //     print("time serial:", timeSerial)
+    // }
 
     func testRangesSplit() {
         let ranges = splitRanges(total: 70, splits: 11)
@@ -53,7 +53,7 @@ final class NDArrayTests: XCTestCase {
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApplyParallel", testElementWiseApplyParallel),
-        ("testElementWiseApplyParallelBenchmark", testElementWiseApplyParallelBenchmark),
+        // ("testElementWiseApplyParallelBenchmark", testElementWiseApplyParallelBenchmark),
         ("testRangesSplit", testRangesSplit),
     ]
 }
