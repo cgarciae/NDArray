@@ -41,9 +41,9 @@ let package = Package(
             name: "NDArray",
             dependencies: ["CBlas", "CLapack"]
         ),
-        // .testTarget(
-        //     name: "NDArrayTests",
-        //     dependencies: ["NDArray"]
-        // ),
+        .testTarget(
+            name: "NDArrayTests",
+            dependencies: ["NDArray"]
+        ),
     ]
 )

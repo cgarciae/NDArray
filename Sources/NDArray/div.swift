@@ -28,8 +28,8 @@ extension NDArray where Scalar == Float {
 
         return NDArray(
             elementWise(
-                between: left.data,
-                and: right.data,
+                left.data,
+                right.data,
                 apply: /
             ),
             shape: left.shape

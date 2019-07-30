@@ -19,7 +19,6 @@ extension NDArray where Scalar == Float {
     }
 
     @inlinable
-    @differentiable(vjp: _vjpSubtract(lhs:rhs:) where Scalar == Float)
     public static func - (left: NDArray<Scalar>, right: NDArray<Scalar>) -> NDArray<Scalar> {
         precondition(left.shape == right.shape)
 
