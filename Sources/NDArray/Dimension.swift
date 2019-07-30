@@ -4,11 +4,13 @@ protocol DimensionProtocol {
     var count: Int { get }
     var realCount: Int { get }
     func realIndex(of: Int) -> Int
+    var memory_stride: Int { get }
 }
 
 public struct ContiguousDimension: DimensionProtocol {
     let start: Int
     let end: Int
+    let memory_stride: Int
 
     var count: Int { end }
     var realCount: Int { end }
@@ -22,6 +24,18 @@ public struct Dimension: DimensionProtocol {
     let stride: Int
     let repetitions: Int
     let memory_stride: Int
+
+    public init(
+        memory_stride: Int, total: Int, start: Int = 0, end: Int? = nil,
+        stride: Int = 1, repetitions: Int = 1
+    ) {
+        self.memory_stride = memory_stride
+        self.total = total
+        self.start = start
+        self.end = end ?? total
+        self.stride = stride
+        self.repetitions = repetitions
+    }
 
     var count: Int {
         if (end - start) % stride != 0 {

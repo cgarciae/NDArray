@@ -3,8 +3,35 @@ protocol ShapeProtocol {
     // func indexIterator() -> AnyIterator<Int>
 }
 
-struct Shape: ShapeProtocol {
+public struct Shape: ShapeProtocol {
     var dimensions: [DimensionProtocol]
+
+    public init(_ shape: [Int]) {
+        let N = shape.count
+
+        var acc = 1
+        var memory_strides = [Int]()
+
+        for i in 0 ..< shape.count {
+            if shape[N - i - 1] > 1 {
+                memory_strides.append(acc)
+                acc *= shape[N - i - 1]
+            } else {
+                memory_strides.append(0)
+            }
+        }
+
+        dimensions = memory_strides
+            .reversed()
+            .enumerated()
+            .map { i, memory_stride -> Dimension in
+                Dimension(
+                    memory_stride: memory_stride, total: shape[i],
+                    start: 0, end: shape[i],
+                    stride: 1, repetitions: 1
+                )
+            }
+    }
 }
 
 // extension Shape {

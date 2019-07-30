@@ -4,7 +4,7 @@ import XCTest
 
 final class DimensionTests: XCTestCase {
     func testVirualEmpty() {
-        let dimension = Dimension(start: 0, end: 0, total: 0, stride: 1, repetitions: 3, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 0, repetitions: 3)
 
         // let realIndex = dimension.realIndex(of: 1)
         let count = dimension.count
@@ -16,7 +16,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualOneRepeated() {
-        let dimension = Dimension(start: 0, end: 1, total: 1, stride: 1, repetitions: 3, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 1, repetitions: 3)
 
         let realIndex = dimension.realIndex(of: 1)
         let count = dimension.count
@@ -28,7 +28,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualStrided() {
-        let dimension = Dimension(start: 0, end: 10, total: 10, stride: 3, repetitions: 1, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 10, stride: 3)
 
         let realIndex = dimension.realIndex(of: 1)
         let count = dimension.count
@@ -40,7 +40,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualStridedMultiple() {
-        let dimension = Dimension(start: 0, end: 4, total: 4, stride: 3, repetitions: 1, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 4, stride: 3)
 
         let realIndex = dimension.realIndex(of: 1)
         let count = dimension.count
@@ -52,7 +52,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualStridedMultiple2() {
-        let dimension = Dimension(start: 0, end: 7, total: 7, stride: 3, repetitions: 1, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 7, stride: 3)
 
         let realIndex = dimension.realIndex(of: 1)
         let count = dimension.count
@@ -64,7 +64,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualStridedMultiple3() {
-        let dimension = Dimension(start: 0, end: 8, total: 8, stride: 3, repetitions: 1, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 8, stride: 3)
 
         let realIndex = dimension.realIndex(of: 1)
         let count = dimension.count
@@ -76,7 +76,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualStridedMultiple4() {
-        let dimension = Dimension(start: 0, end: 9, total: 9, stride: 3, repetitions: 1, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 9, stride: 3)
 
         let realIndex = dimension.realIndex(of: 1)
         let count = dimension.count
@@ -88,7 +88,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualStridedMultiple5() {
-        let dimension = Dimension(start: 5, end: 6, total: 9, stride: 3, repetitions: 1, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 9, start: 5, end: 6, stride: 3)
 
         let realIndex = dimension.realIndex(of: 0)
         let count = dimension.count
@@ -100,11 +100,28 @@ final class DimensionTests: XCTestCase {
     }
 
     func testVirualEmpty2() {
-        let dimension = Dimension(start: 0, end: 1, total: 0, stride: 1, repetitions: 3, memory_stride: 0)
+        let dimension = Dimension(memory_stride: 0, total: 1, repetitions: 3)
 
         let realIndex = dimension.realIndex(of: 1)
 
         XCTAssertEqual(realIndex, 0)
+    }
+
+    func testScan() {
+        let accumulatedProduct = [1, 2, 3, 4].scan(*)
+
+        let total = accumulatedProduct.reduce(0) { (acc: Int, x: Int) -> Int in acc + x }
+
+        XCTAssertEqual(total, 33)
+    }
+
+    func testShapeInit() {
+        let shape = Shape([5, 1, 4, 2])
+
+        XCTAssertEqual(
+            shape.dimensions.map { $0.memory_stride },
+            [8, 0, 2, 1]
+        )
     }
 
     static var allTests = [
@@ -117,5 +134,7 @@ final class DimensionTests: XCTestCase {
         ("testVirualStridedMultiple4", testVirualStridedMultiple4),
         ("testVirualStridedMultiple5", testVirualStridedMultiple5),
         ("testVirualEmpty2", testVirualEmpty2),
+        ("testScan", testScan),
+        ("testShapeInit", testShapeInit),
     ]
 }

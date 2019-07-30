@@ -5,6 +5,32 @@ import class Foundation.ProcessInfo
 let DISPATCH = DispatchQueue(label: "NDArray", attributes: .concurrent)
 public let CPU_COUNT = ProcessInfo.processInfo.activeProcessorCount
 
+extension Sequence {
+    func scan(initial: Element? = nil, _ f: @escaping (Element, Element) -> Element) -> AnySequence<Element> {
+        AnySequence<Element> { () -> AnyIterator<Element> in
+            var iterator = self.makeIterator()
+            var acc = initial ?? iterator.next()
+            var mayberNext = iterator.next()
+
+            return AnyIterator { () -> Element? in
+                if let next = mayberNext {
+                    defer {
+                        mayberNext = iterator.next()
+                        acc = f(acc!, next)
+                    }
+
+                    return acc
+                } else {
+                    defer {
+                        acc = nil
+                    }
+                    return acc
+                }
+            }
+        }
+    }
+}
+
 public func splitRanges(total: Int, splits: Int) -> [Range<Int>] {
     let total = Float(total)
     let points = Set(
