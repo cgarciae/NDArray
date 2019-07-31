@@ -20,6 +20,108 @@ final class NDArrayTests: XCTestCase {
         XCTAssert(c.data == [2, 4, 6])
     }
 
+    func testElementWiseApply2D() {
+        let a = NDArray(
+            [
+                1, 2, 3,
+                4, 5, 6,
+            ],
+            shape: [2, 3]
+        )
+        let b = NDArray(
+            [
+                1, 2, 3,
+                4, 5, 6,
+            ],
+            shape: [2, 3]
+        )
+
+        let c = elementWise(a, b, apply: +)
+
+        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+    }
+
+    func testConstructor() {
+        let a = NDArray<Int>(
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+            ]
+        )
+        let b = NDArray<Int>(
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+            ]
+        )
+        let c = a + b
+
+        XCTAssertEqual(a.shape, [2, 3])
+        XCTAssertEqual(b.shape, [2, 3])
+        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+    }
+
+    func testElementWiseApply3D() {
+        let a = NDArray(
+            [
+                1, 2, 3,
+                4, 5, 6,
+
+                7, 8, 9,
+                10, 11, 12,
+            ],
+            shape: [2, 2, 3]
+        )
+        let b = NDArray(
+            [
+                1, 2, 3,
+                4, 5, 6,
+
+                7, 8, 9,
+                10, 11, 12,
+            ],
+            shape: [2, 2, 3]
+        )
+
+        let c = elementWise(a, b, apply: +)
+
+        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+    }
+
+    func testElementWiseApply3DConstructor() {
+        let a = NDArray<Int>(
+            [
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                ],
+                [
+                    [7, 8, 9],
+                    [10, 11, 12],
+                ],
+            ]
+        )
+        let b = NDArray<Int>(
+            [
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                ],
+                [
+                    [7, 8, 9],
+                    [10, 11, 12],
+                ],
+            ]
+        )
+
+        let c = a + b
+
+        XCTAssertEqual(a.shape, [2, 2, 3])
+        XCTAssertEqual(b.shape, [2, 2, 3])
+        XCTAssertEqual(c.shape, [2, 2, 3])
+        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+    }
+
     func testElementWiseApplyParallel() {
         let a = NDArray(Array(1 ... 100), shape: [100])
         let b = NDArray(Array(1 ... 100), shape: [100])
@@ -39,11 +141,29 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[1, 1]
 
-        print(b.shape)
+        let realIndex = b.realIndex(of: 0)
 
-        let realIndex = b._shape.realIndex(of: [0, 0])
-
+        XCTAssertEqual(b.shape, [])
+        XCTAssertEqual(realIndex, 3)
         XCTAssertEqual(b.data[realIndex], 20)
+    }
+
+    func testScalarElementWiseAdd() {
+        let a = NDArray([
+            3, 30,
+            2, 20,
+            1, 10,
+
+        ], shape: [3, 2])
+
+        let b = a[1, 1]
+        let c = a[2, 0]
+
+        let d = b + c
+
+        XCTAssertEqual(b.copy().data, [20])
+        XCTAssertEqual(c.copy().data, [1])
+        XCTAssertEqual(d.data, [21])
     }
 
     // func testElementWiseApplyParallelBenchmark() {
@@ -69,9 +189,14 @@ final class NDArrayTests: XCTestCase {
 
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
+        ("testElementWiseApply2D", testElementWiseApply2D),
+        ("testElementWiseApply3D", testElementWiseApply3D),
         ("testElementWiseApplyParallel", testElementWiseApplyParallel),
         // ("testElementWiseApplyParallelBenchmark", testElementWiseApplyParallelBenchmark),
         ("testRangesSplit", testRangesSplit),
         ("testIndex", testIndex),
+        ("testScalarElementWiseAdd", testScalarElementWiseAdd),
+        ("testConstructor", testConstructor),
+        ("testElementWiseApply3DConstructor", testElementWiseApply3DConstructor),
     ]
 }

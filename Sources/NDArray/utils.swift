@@ -1,4 +1,33 @@
 
+public func flattenArrays<A>(_ array: [Any]) -> (array: [A], shape: [Int]) {
+    if array.count == 0 {
+        return (
+            array: [],
+            shape: []
+        )
+    } else {
+        var shape: [Int] = [array.count]
+        return flattenArrays(array: array, shape: &shape)
+    }
+}
+
+func flattenArrays<A>(array: [Any], shape: inout [Int]) -> (array: [A], shape: [Int]) {
+    if array[0] is A {
+        return (
+            array: array as! [A],
+            shape: shape
+        )
+
+    } else {
+        let array = array as! [[Any]]
+        shape.append(array[0].count)
+        return flattenArrays(
+            array: array.flatMap { $0 },
+            shape: &shape
+        )
+    }
+}
+
 @inlinable
 public func splitRanges(total: Int, splits: Int) -> [Range<Int>] {
     let total = Float(total)
@@ -17,6 +46,11 @@ public func splitRanges(total: Int, splits: Int) -> [Range<Int>] {
     }
 
     return ranges
+}
+
+@inlinable
+public func getDimensionStrides(of shape: [Int]) -> [Int] {
+    shape.reversed().scan(*).reversed().dropFirst() + [1]
 }
 
 extension Sequence {

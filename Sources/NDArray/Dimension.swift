@@ -18,6 +18,8 @@ public protocol DimensionProtocol {
     func realIndex(of: Int) -> Int
 }
 
+public protocol SqueezedDimension: DimensionProtocol {}
+
 extension DimensionProtocol {
     @inlinable
     public func memoryStridedValue(of index: Int) -> Int {
@@ -80,7 +82,7 @@ public struct SlicedDimension: DimensionProtocol {
     }
 }
 
-public struct IndexedDimension: DimensionProtocol {
+public struct IndexedDimension: DimensionProtocol, SqueezedDimension {
     public let base: DimensionProtocol
     public let length: Int
 

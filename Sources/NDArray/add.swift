@@ -1,5 +1,15 @@
 import func CBlas.cblas_saxpy
 
+extension NDArray where Scalar: AdditiveArithmetic {
+    public static func + (lhs: NDArray<Scalar>, rhs: NDArray<Scalar>) -> NDArray<Scalar> {
+        elementWise(lhs, rhs, apply: +)
+    }
+
+    public static func - (lhs: NDArray<Scalar>, rhs: NDArray<Scalar>) -> NDArray<Scalar> {
+        elementWise(lhs, rhs, apply: -)
+    }
+}
+
 // extension NDArray where Scalar: AdditiveArithmetic {
 //     @inlinable
 //     public static func + (left: NDArray, right: Scalar) -> NDArray<Float> {

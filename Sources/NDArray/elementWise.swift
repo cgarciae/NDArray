@@ -23,7 +23,7 @@ public func elementWise<A, B, C>(
                 for i in 0 ..< nElements {
                     arrayC[i] = f(
                         arrayA[ndArrayA.realIndex(of: i)],
-                        arrayB[ndArrayA.realIndex(of: i)]
+                        arrayB[ndArrayB.realIndex(of: i)]
                     )
                 }
             }
@@ -91,5 +91,24 @@ extension NDArray {
         _ f: @escaping (Scalar, B) -> C
     ) -> NDArray<C> {
         elementWiseInParallel(self, other, workers: workers, apply: f)
+    }
+
+    public func copy() -> NDArray {
+        let nElements = self.shape.reduce(1, *)
+
+        let arrayC = [Scalar](unsafeUninitializedCapacity: nElements) { arrayC, count in
+            count = nElements
+
+            self.data.withUnsafeBufferPointer { arrayA in
+                for i in 0 ..< nElements {
+                    arrayC[i] = arrayA[self.realIndex(of: i)]
+                }
+            }
+        }
+
+        return NDArray(
+            arrayC,
+            shape: self.shape
+        )
     }
 }

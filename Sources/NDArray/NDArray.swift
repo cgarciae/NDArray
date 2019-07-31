@@ -5,17 +5,39 @@ public struct NDArray<Scalar> {
     public let _shape: Shape
 
     @inlinable
-    public var shape: [Int] { _shape.dimension_lengths }
+    public var shape: [Int] { _shape.virtualShape }
+
+    public init(_ data: [Any], shape: [Int]? = nil) {
+        // precondition(shape.reduce(1, *) == data.count)
+        let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
+
+        precondition(
+            calculatedShape.reduce(1, *) == flatData.count,
+            "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
+        )
+
+        if let shape = shape {
+            precondition(
+                shape.reduce(1, *) == flatData.count,
+                "Invalid shape, number of elements"
+            )
+        }
+
+        let shape = shape ?? calculatedShape
+
+        self.data = flatData
+        _shape = Shape(shape)
+    }
 
     public init(_ data: [Scalar], shape: [Int]) {
-        // precondition(shape.reduce(1, *) == data.count)
+        precondition(shape.reduce(1, *) == data.count)
 
         self.data = data
         _shape = Shape(shape)
     }
 
     public init(_ data: [Scalar], shape: Shape) {
-        // precondition(shape.dimension_lengths.reduce(1, *) == data.count)
+        // precondition(shape.dimensionLengths.reduce(1, *) == data.count)
 
         self.data = data
         _shape = shape
@@ -29,6 +51,12 @@ public struct NDArray<Scalar> {
     @inlinable
     public func realIndex(of index: Int) -> Int {
         _shape.realIndex(of: index)
+    }
+
+    @inlinable
+    public func dataValue(at index: Int) -> Scalar {
+        let realIndex = _shape.realIndex(of: index)
+        return data[realIndex]
     }
 
     @inlinable
