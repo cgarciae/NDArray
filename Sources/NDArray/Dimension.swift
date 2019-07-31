@@ -1,124 +1,142 @@
 import Foundation
 
-protocol DimensionProtocol {
-    var count: Int { get }
-    var realCount: Int { get }
-    func realIndex(of: Int) -> Int
-    var memory_stride: Int { get }
+public struct MemoryLayout {
+    public let stride: Int
+    public let length: Int
+
+    fileprivate init(length: Int, stride: Int) {
+        self.stride = stride
+        self.length = length
+    }
 }
 
-public struct ContiguousDimension: DimensionProtocol {
-    let start: Int
-    let end: Int
-    let memory_stride: Int
+public protocol DimensionProtocol {
+    var length: Int { get }
+    var memory_layout: MemoryLayout { get }
 
-    var count: Int { end }
-    var realCount: Int { end }
-    func realIndex(of index: Int) -> Int { index }
+    @inlinable
+    func realIndex(of: Int) -> Int
+}
+
+extension DimensionProtocol {
+    @inlinable
+    public func memoryStridedValue(of index: Int) -> Int {
+        realIndex(of: index) * memory_layout.stride
+    }
 }
 
 public struct Dimension: DimensionProtocol {
-    let start: Int
-    let end: Int
-    let total: Int
-    let stride: Int
-    let repetitions: Int
-    let memory_stride: Int
+    public let length: Int
+    public let memory_layout: MemoryLayout
 
-    public init(
-        memory_stride: Int, total: Int, start: Int = 0, end: Int? = nil,
-        stride: Int = 1, repetitions: Int = 1
-    ) {
-        self.memory_stride = memory_stride
-        self.total = total
-        self.start = start
-        self.end = end ?? total
-        self.stride = stride
-        self.repetitions = repetitions
+    public init(length: Int, memory_stride: Int) {
+        self.length = length
+        memory_layout = MemoryLayout(length: length, stride: memory_stride)
     }
 
-    var count: Int {
+    @inlinable
+    public func realIndex(of index: Int) -> Int { index }
+}
+
+public struct SingularDimension: DimensionProtocol {
+    public let length: Int = 1
+    public let memory_layout: MemoryLayout
+
+    public init() {
+        memory_layout = MemoryLayout(length: 1, stride: 0)
+    }
+
+    @inlinable
+    public func realIndex(of index: Int) -> Int { 0 }
+}
+
+public struct SlicedDimension: DimensionProtocol {
+    public let base: DimensionProtocol
+    public let length: Int
+
+    public let stride: Int
+    public let start: Int
+    public let end: Int
+
+    @inlinable
+    public var memory_layout: MemoryLayout { base.memory_layout }
+
+    fileprivate init(base: DimensionProtocol, start: Int, end: Int, stride: Int) {
+        self.base = base
+        self.start = start
+        self.end = min(end, base.length)
+        self.stride = stride
+
         if (end - start) % stride != 0 {
-            return (1 + (end - start) / stride) * repetitions
+            length = (1 + (end - start) / stride)
         } else {
-            return ((end - start) / stride) * repetitions
+            length = ((end - start) / stride)
         }
     }
 
-    var realCount: Int {
-        return total
-    }
-
-    func realIndex(of index: Int) -> Int {
-        precondition(index < count, "Index out bounds, index: \(index), count: \(count)")
-
-        return start + (index / repetitions) * stride
+    @inlinable
+    public func realIndex(of index: Int) -> Int {
+        base.realIndex(of: index * stride + start)
     }
 }
 
-// extension ContiguousDimension {
-//     func indexIterator() -> AnyIterator<Int> {
-//         AnyIterator((start ..< end).makeIterator())
-//     }
-// }
-// extension Dimension {
-//     func indexIterator() -> AnySequence<Int>.Iterator {
-//         let sequence = AnySequence { () -> AnyIterator<Int> in
-//             var current = self.start
-//             var repetition = 0
+public struct IndexedDimension: DimensionProtocol {
+    public let base: DimensionProtocol
+    public let length: Int
 
-//             return AnyIterator { () -> Int? in
-//                 defer {
-//                     repetition += 1
+    public let start: Int
 
-//                     if repetition == self.repetitions {
-//                         current += self.stride
-//                         repetition = 0
-//                     }
-//                 }
+    @inlinable
+    public var memory_layout: MemoryLayout { base.memory_layout }
 
-//                 if current < self.end {
-//                     return current
-//                 } else {
-//                     return nil
-//                 }
-//             }
-//         }
+    fileprivate init(base: DimensionProtocol, start: Int) {
+        self.base = base
+        self.start = start
 
-//         return sequence.makeIterator()
-//     }
-// }
+        length = 1
+    }
 
-// extension DimensionProtocol {
-//     func fullSequence(cycleRepetitions: Int, elementRepetitions: Int) -> AnySequence<Int> {
-//         return AnySequence { () -> AnyIterator<Int> in
-//             var cycle = 0
-//             var repetition = 0
-//             var iterator = self.indexIterator()
-//             var current = iterator.next()
+    @inlinable
+    public func realIndex(of index: Int) -> Int {
+        base.realIndex(of: index + start)
+    }
+}
 
-//             return AnyIterator { () -> Int? in
+public struct TiledDimension: DimensionProtocol {
+    public let base: DimensionProtocol
+    public var length: Int
+    public var repetitions: Int
+    @inlinable
+    public var memory_layout: MemoryLayout { base.memory_layout }
 
-//                 if repetition == elementRepetitions {
-//                     current = iterator.next()
-//                     repetition = 0
-//                 }
+    fileprivate init(base: DimensionProtocol, repetitions: Int) {
+        self.base = base
+        self.repetitions = repetitions
 
-//                 repetition += 1
+        length = base.length * repetitions
+    }
 
-//                 if current == nil {
-//                     cycle += 1
+    @inlinable
+    public func realIndex(of index: Int) -> Int {
+        base.realIndex(of: index % base.length)
+    }
+}
 
-//                     if cycle == cycleRepetitions {
-//                         return nil
-//                     }
+extension DimensionProtocol {
+    public func sliced(start: Int = 0, end: Int? = nil, stride: Int = 1) -> DimensionProtocol {
+        SlicedDimension(
+            base: self,
+            start: start,
+            end: end ?? length,
+            stride: stride
+        )
+    }
 
-//                     iterator = self.indexIterator()
-//                     current = iterator.next()
-//                 }
+    public func tiled(_ repetitions: Int) -> DimensionProtocol {
+        TiledDimension(base: self, repetitions: repetitions)
+    }
 
-//                 return current
-//             }
-//         }
-//     }
-// }
+    public func indexed(_ start: Int) -> DimensionProtocol {
+        IndexedDimension(base: self, start: start)
+    }
+}

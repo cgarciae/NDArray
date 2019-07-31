@@ -1,36 +1,79 @@
 
-protocol ShapeProtocol {
+public protocol ShapeProtocol {
     // func indexIterator() -> AnyIterator<Int>
 }
 
 public struct Shape: ShapeProtocol {
-    var dimensions: [DimensionProtocol]
+    public let dimensions: [DimensionProtocol]
+    public let dimension_lengths: [Int]
 
     public init(_ shape: [Int]) {
-        let N = shape.count
+        let memory_strides = shape.reversed().scan(*).reversed()
 
-        var acc = 1
-        var memory_strides = [Int]()
+        dimensions = (0 ..< shape.count)
+            .map { i -> DimensionProtocol in
+                let length = shape[i]
 
-        for i in 0 ..< shape.count {
-            if shape[N - i - 1] > 1 {
-                memory_strides.append(acc)
-                acc *= shape[N - i - 1]
-            } else {
-                memory_strides.append(0)
+                if length == 1 {
+                    return SingularDimension()
+                } else if i == shape.count - 1 {
+                    return Dimension(length: length, memory_stride: 1)
+                } else {
+                    return Dimension(length: length, memory_stride: memory_strides[i + 1])
+                }
             }
-        }
 
-        dimensions = memory_strides
-            .reversed()
-            .enumerated()
-            .map { i, memory_stride -> Dimension in
-                Dimension(
-                    memory_stride: memory_stride, total: shape[i],
-                    start: 0, end: shape[i],
-                    stride: 1, repetitions: 1
-                )
+        dimension_lengths = dimensions.map { $0.length }
+    }
+
+    public init(_ dimensions: [DimensionProtocol]) {
+        self.dimensions = dimensions
+        dimension_lengths = dimensions.map { $0.length }
+    }
+
+    @inlinable
+    public func realIndex(of index: Int) -> Int {
+        if index == 0 { return 0 }
+
+        return dimensions
+            .lazy
+            .filter { $0.memory_layout.stride > 0 }
+            .reduce((accumulatedIndex: 0, reminder: index)) { state, dimension in
+
+                if state.reminder == 0 {
+                    return state
+                }
+
+                let (quotient, reminder) = state.reminder.quotientAndRemainder(dividingBy: dimension.memory_layout.stride)
+                let accumulatedIndex = dimension.memoryStridedValue(of: quotient) + state.accumulatedIndex
+
+                return (accumulatedIndex: accumulatedIndex, reminder: reminder)
             }
+            .accumulatedIndex
+    }
+
+    @inlinable
+    public func realIndex(of indexes: [Int]) -> Int {
+        precondition(
+            indexes.count == dimension_lengths.count,
+            "Invalid index dimensions, expected \(dimension_lengths.count), got \(indexes.count)"
+        )
+        precondition(
+            zip(indexes, dimension_lengths).map(<=).reduce(true) { $0 && $1 },
+            "Index out of bounds, expected values in the range of \(dimension_lengths), got \(indexes)"
+        )
+
+        return zip(dimensions, indexes)
+            .lazy
+            .map { dimension, index in
+                dimension.memoryStridedValue(of: index)
+            }
+            .reduce(0, +)
+    }
+
+    @inlinable
+    public subscript(_ indexes: Int...) -> Int {
+        realIndex(of: indexes)
     }
 }
 
