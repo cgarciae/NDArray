@@ -1,6 +1,6 @@
 # NDArray
 
-NDArray is a multidimensional array library written in Swift that aims to become the equivalent of `numpy` in Swift's emerging data science ecosystem. This project is in a very early stage and has a long but exciting rode ahead, contributions are welcome!
+NDArray is a multidimensional array library written in Swift that aims to become the equivalent of `numpy` in Swift's emerging data science ecosystem. This project is in a very early stage and has a long but exciting road ahead, contributions are welcome!
 
 ## Goals
 
