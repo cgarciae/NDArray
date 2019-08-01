@@ -60,25 +60,58 @@ public struct SlicedDimension: DimensionProtocol {
     public let start: Int
     public let end: Int
 
-    @inlinable
-    public var memory_layout: MemoryLayout { base.memory_layout }
+    public var memory_layout: MemoryLayout
 
     fileprivate init(base: DimensionProtocol, start: Int, end: Int, stride: Int) {
         self.base = base
-        self.start = start
-        self.end = min(end, base.length)
         self.stride = stride
+        memory_layout = base.memory_layout
+        let abs_stride = abs(stride)
 
-        if (end - start) % stride != 0 {
-            length = (1 + (end - start) / stride)
+        if stride > 0 {
+            self.start = start
+            self.end = min(end, base.length)
+
         } else {
-            length = ((end - start) / stride)
+            self.start = base.length - min(end, base.length)
+            self.end = base.length - start
+        }
+
+        if (end - start) % abs_stride != 0 {
+            length = (1 + (end - start) / abs_stride)
+        } else {
+            length = ((end - start) / abs_stride)
         }
     }
 
     @inlinable
     public func realIndex(of index: Int) -> Int {
-        base.realIndex(of: index * stride + start)
+        var index = index
+
+        if stride < 0 {
+            index = base.length - 1 - index
+        }
+
+        return base.realIndex(of: index * stride + start)
+    }
+}
+
+public struct InvertedDimension: DimensionProtocol {
+    public let base: DimensionProtocol
+    public let length: Int
+
+    public var memory_layout: MemoryLayout
+
+    fileprivate init(base: DimensionProtocol) {
+        self.base = base
+
+        length = base.length
+        memory_layout = base.memory_layout
+    }
+
+    @inlinable
+    public func realIndex(of index: Int) -> Int {
+        base.realIndex(of: length - 1 - index)
     }
 }
 
@@ -88,13 +121,13 @@ public struct IndexedDimension: DimensionProtocol, SqueezedDimension {
 
     public let start: Int
 
-    @inlinable
-    public var memory_layout: MemoryLayout { base.memory_layout }
+    public var memory_layout: MemoryLayout
 
     fileprivate init(base: DimensionProtocol, start: Int) {
         self.base = base
         self.start = start
 
+        memory_layout = base.memory_layout
         length = 1
     }
 
@@ -108,14 +141,14 @@ public struct TiledDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public var length: Int
     public var repetitions: Int
-    @inlinable
-    public var memory_layout: MemoryLayout { base.memory_layout }
+    public var memory_layout: MemoryLayout
 
     fileprivate init(base: DimensionProtocol, repetitions: Int) {
         self.base = base
         self.repetitions = repetitions
 
         length = base.length * repetitions
+        memory_layout = base.memory_layout
     }
 
     @inlinable
@@ -140,5 +173,9 @@ extension DimensionProtocol {
 
     public func indexed(_ start: Int) -> DimensionProtocol {
         IndexedDimension(base: self, start: start)
+    }
+
+    public var inverted: DimensionProtocol {
+        InvertedDimension(base: self)
     }
 }

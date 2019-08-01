@@ -8,11 +8,16 @@ public struct Shape: ShapeProtocol {
     public let dimensionLengths: [Int]
     public let dimensionStrides: [Int]
     public let virtualShape: [Int]
+    public let nonSequeezedDimensions: [(index: Int, dimension: DimensionProtocol)]
+
+    public func realDimension(at index: Int) -> DimensionProtocol {
+        nonSequeezedDimensions.first { $0.index == index }!.dimension
+    }
 
     public init(_ shape: [Int]) {
         let dimensionStrides = getDimensionStrides(of: shape)
 
-        dimensions = (0 ..< shape.count)
+        let dimensions = (0 ..< shape.count)
             .map { i -> DimensionProtocol in
 
                 if shape[i] == 1 {
@@ -22,9 +27,7 @@ public struct Shape: ShapeProtocol {
                 }
             }
 
-        dimensionLengths = dimensions.map { $0.length }
-        virtualShape = dimensionLengths
-        self.dimensionStrides = dimensionStrides
+        self.init(dimensions)
     }
 
     public init(_ dimensions: [DimensionProtocol]) {
@@ -32,6 +35,11 @@ public struct Shape: ShapeProtocol {
         dimensionLengths = dimensions.map { $0.length }
         dimensionStrides = getDimensionStrides(of: dimensionLengths)
         virtualShape = dimensions.filter { !($0 is SqueezedDimension) }.map { $0.length }
+        nonSequeezedDimensions = dimensions
+            .lazy
+            .enumerated()
+            .map { (index: $0.0, dimension: $0.1) }
+            .filter { !($0.dimension is SqueezedDimension) }
     }
 
     @inlinable

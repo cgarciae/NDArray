@@ -60,16 +60,63 @@ public struct NDArray<Scalar> {
         precondition(shape.count >= ranges.count)
 
         var dimensions = _shape.dimensions
-        let indexedDimensions = dimensions
-            .enumerated()
-            .filter { !($0.1 is SqueezedDimension) }
 
-        for (rangeExpression, index_dimension) in zip(ranges, indexedDimensions) {
-            let (i, dimension) = index_dimension
-
+        for (rangeExpression, virtual) in zip(ranges, _shape.nonSequeezedDimensions) {
             switch rangeExpression.arrayRange {
             case let .index(index):
-                dimensions[i] = dimension.indexed(index)
+                dimensions[virtual.index] = virtual.dimension.indexed(index)
+
+            case let .range(range, stride: stride):
+                var dimension = virtual.dimension
+
+                if stride < 0 {
+                    dimension = dimension.inverted
+                }
+
+                dimensions[virtual.index] = dimension.sliced(
+                    start: range.lowerBound,
+                    end: range.upperBound,
+                    stride: abs(stride)
+                )
+
+            case let .closedRange(range, stride: stride):
+
+                dimensions[virtual.index] = virtual.dimension.sliced(
+                    start: range.lowerBound,
+                    end: range.upperBound + 1,
+                    stride: stride
+                )
+
+            case let .partialRangeUpTo(range, stride: stride):
+                dimensions[virtual.index] = virtual.dimension.sliced(
+                    start: 0,
+                    end: range.upperBound,
+                    stride: stride
+                )
+
+            case let .partialRangeThrough(range, stride: stride):
+                var dimension = virtual.dimension
+                if stride < 0 {
+                    dimension = dimension.inverted
+                }
+
+                dimensions[virtual.index] = dimension.sliced(
+                    start: 0,
+                    end: range.upperBound + 1,
+                    stride: abs(stride)
+                )
+
+            case let .partialRangeFrom(range, stride: stride):
+                var dimension = virtual.dimension
+
+                if stride < 0 {
+                    dimension = dimension.inverted
+                }
+
+                dimensions[virtual.index] = dimension.sliced(
+                    start: range.lowerBound,
+                    stride: abs(stride)
+                )
             }
         }
 
@@ -85,15 +132,11 @@ public struct NDArray<Scalar> {
         precondition(shape.count >= indexes.count)
 
         var dimensions = _shape.dimensions
-        let indexedDimensions = dimensions
-            .enumerated()
-            .filter { !($0.1 is SqueezedDimension) }
 
-        for (current, nextIdx) in indexes.enumerated() {
-            let trueNext = indexedDimensions[nextIdx].0
-            let trueCurrent = indexedDimensions[current].0
+        for (virtualIndexCurrent, virtualIndexNext) in indexes.enumerated() {
+            let realIndexCurrent = _shape.nonSequeezedDimensions[virtualIndexCurrent].index
 
-            dimensions[trueCurrent] = _shape.dimensions[trueNext]
+            dimensions[realIndexCurrent] = _shape.nonSequeezedDimensions[virtualIndexNext].dimension
         }
 
         return NDArray(data, shape: Shape(dimensions))
@@ -151,15 +194,50 @@ public enum ArrayRange: ArrayRangeExpression {
     // case ellipsis
     // case newAxis
     // case squeezeAxis
-    // case range(Range<Int>, stride: Int)
-    // case closedRange(ClosedRange<Int>, stride: Int)
-    // case partialRangeFrom(PartialRangeFrom<Int>, stride: Int)
-    // case partialRangeUpTo(PartialRangeUpTo<Int>, stride: Int)
-    // case partialRangeThrough(PartialRangeThrough<Int>, stride: Int)
+    case range(Range<Int>, stride: Int)
+    case closedRange(ClosedRange<Int>, stride: Int)
+    case partialRangeFrom(PartialRangeFrom<Int>, stride: Int)
+    case partialRangeUpTo(PartialRangeUpTo<Int>, stride: Int)
+    case partialRangeThrough(PartialRangeThrough<Int>, stride: Int)
 
     public var arrayRange: ArrayRange { self }
 }
 
 extension Int: ArrayRangeExpression {
     public var arrayRange: ArrayRange { .index(self) }
+}
+
+extension Range: ArrayRangeExpression where Bound == Int {
+    public var arrayRange: ArrayRange { .range(self, stride: 1) }
+    public func stride(_ stride: Int) -> ArrayRange {
+        .range(self, stride: stride)
+    }
+}
+
+extension ClosedRange: ArrayRangeExpression where Bound == Int {
+    public var arrayRange: ArrayRange { .closedRange(self, stride: 1) }
+    public func stride(_ stride: Int) -> ArrayRange {
+        .closedRange(self, stride: stride)
+    }
+}
+
+extension PartialRangeFrom: ArrayRangeExpression where Bound == Int {
+    public var arrayRange: ArrayRange { .partialRangeFrom(self, stride: 1) }
+    public func stride(_ stride: Int) -> ArrayRange {
+        .partialRangeFrom(self, stride: stride)
+    }
+}
+
+extension PartialRangeUpTo: ArrayRangeExpression where Bound == Int {
+    public var arrayRange: ArrayRange { .partialRangeUpTo(self, stride: 1) }
+    public func stride(_ stride: Int) -> ArrayRange {
+        .partialRangeUpTo(self, stride: stride)
+    }
+}
+
+extension PartialRangeThrough: ArrayRangeExpression where Bound == Int {
+    public var arrayRange: ArrayRange { .partialRangeThrough(self, stride: 1) }
+    public func stride(_ stride: Int) -> ArrayRange {
+        .partialRangeThrough(self, stride: stride)
+    }
 }
