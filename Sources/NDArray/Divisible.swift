@@ -1,12 +1,3 @@
-//
-//  Divisible.swift
-//  Expression
-//
-//  Created by Michael Pangburn on 12/14/17.
-//  Copyright © 2017 Michael Pangburn. All rights reserved.
-//
-
-/// Declares the division operator and its mutating counterpart.
 import Foundation
 
 public protocol Divisible: Numeric {
