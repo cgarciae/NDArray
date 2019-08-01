@@ -65,34 +65,21 @@ public struct SlicedDimension: DimensionProtocol {
     fileprivate init(base: DimensionProtocol, start: Int, end: Int, stride: Int) {
         self.base = base
         self.stride = stride
+        self.start = start
+        self.end = end
+
+        if abs(end - start) % abs(stride) != 0 {
+            length = (1 + abs(end - start) / abs(stride))
+        } else {
+            length = (abs(end - start) / abs(stride))
+        }
+
         memory_layout = base.memory_layout
-        let abs_stride = abs(stride)
-
-        if stride > 0 {
-            self.start = start
-            self.end = min(end, base.length)
-
-        } else {
-            self.start = base.length - min(end, base.length)
-            self.end = base.length - start
-        }
-
-        if (end - start) % abs_stride != 0 {
-            length = (1 + (end - start) / abs_stride)
-        } else {
-            length = ((end - start) / abs_stride)
-        }
     }
 
     @inlinable
     public func realIndex(of index: Int) -> Int {
-        var index = index
-
-        if stride < 0 {
-            index = base.length - 1 - index
-        }
-
-        return base.realIndex(of: index * stride + start)
+        return base.realIndex(of: start + index * stride)
     }
 }
 
@@ -159,10 +146,25 @@ public struct TiledDimension: DimensionProtocol {
 
 extension DimensionProtocol {
     public func sliced(start: Int = 0, end: Int? = nil, stride: Int = 1) -> DimensionProtocol {
-        SlicedDimension(
+        var start = start
+        var end = end ?? (stride > 0 ? length : 0)
+        var length = self.length
+
+        if start < 0 {
+            start += length
+        }
+        if end < 0 {
+            end += length
+        }
+
+        if stride < 0 {
+            end -= 1
+        }
+
+        return SlicedDimension(
             base: self,
             start: start,
-            end: end ?? length,
+            end: end,
             stride: stride
         )
     }

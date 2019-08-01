@@ -67,16 +67,11 @@ public struct NDArray<Scalar> {
                 dimensions[virtual.index] = virtual.dimension.indexed(index)
 
             case let .range(range, stride: stride):
-                var dimension = virtual.dimension
 
-                if stride < 0 {
-                    dimension = dimension.inverted
-                }
-
-                dimensions[virtual.index] = dimension.sliced(
+                dimensions[virtual.index] = virtual.dimension.sliced(
                     start: range.lowerBound,
                     end: range.upperBound,
-                    stride: abs(stride)
+                    stride: stride
                 )
 
             case let .closedRange(range, stride: stride):
@@ -95,27 +90,18 @@ public struct NDArray<Scalar> {
                 )
 
             case let .partialRangeThrough(range, stride: stride):
-                var dimension = virtual.dimension
-                if stride < 0 {
-                    dimension = dimension.inverted
-                }
 
-                dimensions[virtual.index] = dimension.sliced(
+                dimensions[virtual.index] = virtual.dimension.sliced(
                     start: 0,
                     end: range.upperBound + 1,
-                    stride: abs(stride)
+                    stride: stride
                 )
 
             case let .partialRangeFrom(range, stride: stride):
-                var dimension = virtual.dimension
 
-                if stride < 0 {
-                    dimension = dimension.inverted
-                }
-
-                dimensions[virtual.index] = dimension.sliced(
+                dimensions[virtual.index] = virtual.dimension.sliced(
                     start: range.lowerBound,
-                    stride: abs(stride)
+                    stride: stride
                 )
             }
         }

@@ -229,9 +229,9 @@ final class NDArrayTests: XCTestCase {
         print(NDArray<Int>([
             [1, 2, 3, 4, 5, 6, 7],
             [4, 5, 6, 7, 8, 9, 10],
-        ])[0..., (0...).stride(2)])
+        ])[0..., ((-1)...).stride(2)])
 
-        print(NDArray([1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 10])[(..<1).stride(-1)])
+        print(NDArray([1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 10])[((-1)...).stride(-1)])
     }
 
     static var allTests = [
