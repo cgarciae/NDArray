@@ -56,27 +56,27 @@ public struct Shape: ShapeProtocol {
             .accumulatedIndex
     }
 
-    @inlinable
-    public func realIndex(of indexes: [Int]) -> Int {
-        precondition(
-            indexes.count == dimensionLengths.count,
-            "Invalid index dimensions, expected \(dimensionLengths.count), got \(indexes.count)"
-        )
-        precondition(
-            zip(indexes, dimensionLengths).map(<=).reduce(true) { $0 && $1 },
-            "Index out of bounds, expected values in the range of \(dimensionLengths), got \(indexes)"
-        )
+    // @inlinable
+    // public func realIndex(of indexes: [Int]) -> Int {
+    //     precondition(
+    //         indexes.count == dimensionLengths.count,
+    //         "Invalid index dimensions, expected \(dimensionLengths.count), got \(indexes.count)"
+    //     )
+    //     precondition(
+    //         zip(indexes, dimensionLengths).map(<=).reduce(true) { $0 && $1 },
+    //         "Index out of bounds, expected values in the range of \(dimensionLengths), got \(indexes)"
+    //     )
 
-        return zip(dimensions, indexes)
-            .lazy
-            .map { dimension, index in
-                dimension.memoryStridedValue(of: index)
-            }
-            .reduce(0, +)
-    }
+    //     return zip(dimensions, indexes)
+    //         .lazy
+    //         .map { dimension, index in
+    //             dimension.memoryStridedValue(of: index)
+    //         }
+    //         .reduce(0, +)
+    // }
 
-    @inlinable
-    public subscript(_ indexes: Int...) -> Int {
-        realIndex(of: indexes)
-    }
+    // @inlinable
+    // public subscript(_ indexes: Int...) -> Int {
+    //     realIndex(of: indexes)
+    // }
 }
