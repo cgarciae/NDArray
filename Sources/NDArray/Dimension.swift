@@ -148,7 +148,6 @@ extension DimensionProtocol {
     public func sliced(start: Int = 0, end: Int? = nil, stride: Int = 1) -> DimensionProtocol {
         var start = start
         var end = end ?? (stride > 0 ? length : 0)
-        var length = self.length
 
         if start < 0 {
             start += length

@@ -10,6 +10,33 @@ func timeIt(repetitions: Int = 1, function: () -> Void) -> Double {
     return -startTime.timeIntervalSinceNow / Double(repetitions)
 }
 
+struct Point: AdditiveArithmetic {
+    let x: Float
+    let y: Float
+
+    static var zero: Point { Point(x: 0, y: 0) }
+
+    static prefix func + (lhs: Self) -> Self {
+        lhs
+    }
+
+    static func + (lhs: Self, rhs: Self) -> Self {
+        Point(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
+    }
+
+    static func += (lhs: inout Self, rhs: Self) {
+        lhs = lhs + rhs
+    }
+
+    static func - (lhs: Self, rhs: Self) -> Self {
+        Point(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+    }
+
+    public static func -= (_ lhs: inout Point, _ rhs: Point) {
+        lhs = lhs - rhs
+    }
+}
+
 final class NDArrayTests: XCTestCase {
     func testElementWiseApply() {
         let a = NDArray([1, 2, 3], shape: [3])
@@ -121,6 +148,34 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(b.shape, [2, 2, 3])
         XCTAssertEqual(c.shape, [2, 2, 3])
         XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+    }
+
+    func testExample() {
+        let a = NDArray<Int>(
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+            ]
+        )
+        let b = NDArray<Int>(
+            [
+                [7, 8, 9],
+                [10, 11, 12],
+            ]
+        )
+
+        print((a + b) * a)
+    }
+
+    func testExample2() {
+        let a = NDArray<Point>(
+            [Point(x: 1, y: 2), Point(x: 2, y: 3)]
+        )
+        let b = NDArray<Point>(
+            [Point(x: 4, y: 5), Point(x: 6, y: 7)]
+        )
+
+        print(a + b)
     }
 
     func testElementWiseApplyParallel() {
@@ -247,5 +302,7 @@ final class NDArrayTests: XCTestCase {
         ("testElementWiseApply3DConstructor", testElementWiseApply3DConstructor),
         ("testAnything", testAnything),
         ("testTransposed", testTransposed),
+        ("testExample", testExample),
+        ("testExample2", testExample2),
     ]
 }
