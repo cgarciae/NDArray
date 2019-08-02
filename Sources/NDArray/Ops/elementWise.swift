@@ -34,7 +34,7 @@ public func elementwise<A, Z>(
 }
 
 @inlinable
-public func elementWiseInParallel<A, Z>(
+public func elementwiseInParallel<A, Z>(
     _ ndArrayA: NDArray<A>,
     workers: Int = CPU_COUNT,
     apply f: @escaping (A) -> Z
@@ -105,7 +105,7 @@ public func elementwise<A, B, Z>(
 }
 
 @inlinable
-public func elementWiseInParallel<A, B, Z>(
+public func elementwiseInParallel<A, B, Z>(
     _ ndArrayA: NDArray<A>,
     _ ndArrayB: NDArray<B>,
     workers: Int = CPU_COUNT,

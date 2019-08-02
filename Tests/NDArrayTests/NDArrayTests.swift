@@ -182,7 +182,7 @@ final class NDArrayTests: XCTestCase {
         let a = NDArray<Int>(Array(1 ... 100), shape: [100])
         let b = NDArray<Int>(Array(1 ... 100), shape: [100])
 
-        let c = elementWiseInParallel(a, b, apply: +)
+        let c = elementwiseInParallel(a, b, apply: +)
 
         XCTAssert(c.data == a.data.map { $0 * 2 })
     }
@@ -227,7 +227,7 @@ final class NDArrayTests: XCTestCase {
     //     let b = Array(1 ... 20_000_000)
 
     //     let timeParallel = timeIt(repetitions: 1) {
-    //         _ = elementWiseInParallel(a, b, apply: +)
+    //         _ = elementwiseInParallel(a, b, apply: +)
     //     }
     //     let timeSerial = timeIt(repetitions: 1) {
     //         _ = elementwise(a, b, apply: +)

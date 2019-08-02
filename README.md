@@ -72,7 +72,7 @@ elementwise(a, b) { $0 + $1 }
 ```
 For heavy computation you can use the parallelized version:
 ```swift
-elementWiseInParallel(a, b) {
+elementwiseInParallel(a, b) {
     // code
     return c
 }
