@@ -1,5 +1,12 @@
-import func CBlas.cblas_saxpy
-import func CBlas.cblas_sscal
+
+extension NDArray where Scalar: Divisible {
+    public static func / (lhs: NDArray<Scalar>, rhs: NDArray<Scalar>) -> NDArray<Scalar> {
+        elementwise(lhs, rhs, apply: /)
+    }
+}
+
+// import func CBlas.cblas_saxpy
+// import func CBlas.cblas_sscal
 
 // extension NDArray where Scalar == Float {
 //     public static func / (_ left: NDArray<Scalar>, _ right: Scalar) -> NDArray<Scalar> {
@@ -26,7 +33,7 @@ import func CBlas.cblas_sscal
 //     public static func / (_ left: NDArray<Scalar>, _ right: NDArray<Scalar>) -> NDArray<Scalar> {
 //         precondition(left.shape == right.shape)
 
-//         return elementWise(
+//         return elementwise(
 //             left,
 //             right,
 //             apply: /

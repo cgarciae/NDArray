@@ -1,4 +1,10 @@
-import func CBlas.cblas_saxpy
+extension NDArray where Scalar: AdditiveArithmetic {
+    public static func - (lhs: NDArray<Scalar>, rhs: NDArray<Scalar>) -> NDArray<Scalar> {
+        elementwise(lhs, rhs, apply: -)
+    }
+}
+
+// import func CBlas.cblas_saxpy
 
 // extension NDArray where Scalar == Float {
 //     @inlinable

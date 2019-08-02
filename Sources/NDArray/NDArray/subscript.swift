@@ -1,66 +1,12 @@
-func constructArrayAndShape<Scalar>(_ data: [Any], _ shape: [Int]? = nil) -> ([Scalar], Shape) {
-    let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
 
-    precondition(
-        calculatedShape.reduce(1, *) == flatData.count,
-        "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
-    )
-
-    if let shape = shape {
-        precondition(
-            shape.reduce(1, *) == flatData.count,
-            "Invalid shape, number of elements"
-        )
-    }
-
-    return (
-        flatData,
-        Shape(shape ?? calculatedShape)
-    )
-}
-
-public struct NDArray<Scalar> {
-    public let data: [Scalar]
-    @usableFromInline internal let _shape: Shape
-
-    @inlinable public var shape: [Int] { _shape.virtualShape }
-
-    public init(_ data: [Any], shape: [Int]? = nil) {
-        (self.data, _shape) = constructArrayAndShape(data, shape)
-    }
-
-    public init(_ data: [Scalar], shape: [Int]? = nil) {
-        (self.data, _shape) = constructArrayAndShape(data, shape)
-    }
-
-    @usableFromInline internal init(_ data: [Scalar], shape: Shape) {
-        self.data = data
-        _shape = shape
-    }
-
-    public init(scalar data: Scalar) {
-        self.data = [data]
-        _shape = Shape([DimensionProtocol]())
-    }
-
-    @inlinable
-    public func realIndex(of index: Int) -> Int {
-        _shape.realIndex(of: index)
-    }
-
-    @inlinable
-    public func dataValue(at index: Int) -> Scalar {
-        let realIndex = _shape.realIndex(of: index)
-        return data[realIndex]
-    }
-
+extension NDArray {
     @inlinable
     public subscript(_ ranges: [ArrayRangeExpression]) -> NDArray {
         precondition(shape.count >= ranges.count)
 
-        var dimensions = _shape.dimensions
+        var dimensions = array_shape.dimensions
 
-        for (rangeExpression, virtual) in zip(ranges, _shape.nonSequeezedDimensions) {
+        for (rangeExpression, virtual) in zip(ranges, array_shape.nonSequeezedDimensions) {
             switch rangeExpression.arrayRange {
             case let .index(index):
                 dimensions[virtual.index] = virtual.dimension.indexed(index)
@@ -111,61 +57,6 @@ public struct NDArray<Scalar> {
     @inlinable
     public subscript(_ ranges: ArrayRangeExpression...) -> NDArray {
         self[ranges]
-    }
-
-    public func transposed(_ indexes: [Int]) -> NDArray {
-        precondition(shape.count >= indexes.count)
-
-        var dimensions = _shape.dimensions
-
-        for (virtualIndexCurrent, virtualIndexNext) in indexes.enumerated() {
-            let realIndexCurrent = _shape.nonSequeezedDimensions[virtualIndexCurrent].index
-
-            dimensions[realIndexCurrent] = _shape.nonSequeezedDimensions[virtualIndexNext].dimension
-        }
-
-        return NDArray(data, shape: Shape(dimensions))
-    }
-}
-
-extension NDArray: CustomStringConvertible {
-    public var description: String {
-        let nElements = shape.reduce(1, *)
-        var s = "\(Self.self)\(shape)(" + String(repeating: "[", count: max(shape.count - 1, 0))
-
-        if shape.count == 0 {
-            return s + "\(dataValue(at: 0))" + ")"
-        } else if shape.count == 1 {
-            var arrayString = ""
-            for i in 0 ..< nElements {
-                arrayString += "\(dataValue(at: i))" + (i + 1 != nElements ? ", " : "")
-            }
-            return s + "[\(arrayString)])"
-        } else {
-            let reversedShape = Array(shape.reversed())
-            let lastDim = reversedShape[0]
-            let secondLastDim = reversedShape[1]
-
-            s += "\n"
-
-            var arrayString = ""
-
-            for i in 0 ... nElements {
-                if i % lastDim == 0, i > 0 {
-                    s += "    [\(arrayString)],\n"
-                    arrayString = ""
-                }
-
-                if i % (lastDim * secondLastDim) == 0, i > 0, i < nElements {
-                    s += "\n"
-                }
-
-                if i < nElements {
-                    arrayString += "\(dataValue(at: i))" + ((i + 1) % lastDim != 0 ? ", " : "")
-                }
-            }
-            return s + String(repeating: "]", count: max(shape.count - 1, 1)) + ")"
-        }
     }
 }
 

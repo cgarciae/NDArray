@@ -39,23 +39,23 @@ struct Point: AdditiveArithmetic {
 
 final class NDArrayTests: XCTestCase {
     func testElementWiseApply() {
-        let a = NDArray([1, 2, 3], shape: [3])
-        let b = NDArray([1, 2, 3], shape: [3])
+        let a = NDArray<Int>([1, 2, 3], shape: [3])
+        let b = NDArray<Int>([1, 2, 3], shape: [3])
 
-        let c = elementWise(a, b, apply: +)
+        let c = elementwise(a, b, apply: +)
 
         XCTAssert(c.data == [2, 4, 6])
     }
 
     func testElementWiseApply2D() {
-        let a = NDArray(
+        let a = NDArray<Int>(
             [
                 1, 2, 3,
                 4, 5, 6,
             ],
             shape: [2, 3]
         )
-        let b = NDArray(
+        let b = NDArray<Int>(
             [
                 1, 2, 3,
                 4, 5, 6,
@@ -63,7 +63,7 @@ final class NDArrayTests: XCTestCase {
             shape: [2, 3]
         )
 
-        let c = elementWise(a, b, apply: +)
+        let c = elementwise(a, b, apply: +)
 
         XCTAssertEqual(c.data, a.data.map { $0 * 2 })
     }
@@ -89,7 +89,7 @@ final class NDArrayTests: XCTestCase {
     }
 
     func testElementWiseApply3D() {
-        let a = NDArray(
+        let a = NDArray<Int>(
             [
                 1, 2, 3,
                 4, 5, 6,
@@ -99,7 +99,7 @@ final class NDArrayTests: XCTestCase {
             ],
             shape: [2, 2, 3]
         )
-        let b = NDArray(
+        let b = NDArray<Int>(
             [
                 1, 2, 3,
                 4, 5, 6,
@@ -110,7 +110,7 @@ final class NDArrayTests: XCTestCase {
             shape: [2, 2, 3]
         )
 
-        let c = elementWise(a, b, apply: +)
+        let c = elementwise(a, b, apply: +)
 
         XCTAssertEqual(c.data, a.data.map { $0 * 2 })
     }
@@ -179,8 +179,8 @@ final class NDArrayTests: XCTestCase {
     }
 
     func testElementWiseApplyParallel() {
-        let a = NDArray(Array(1 ... 100), shape: [100])
-        let b = NDArray(Array(1 ... 100), shape: [100])
+        let a = NDArray<Int>(Array(1 ... 100), shape: [100])
+        let b = NDArray<Int>(Array(1 ... 100), shape: [100])
 
         let c = elementWiseInParallel(a, b, apply: +)
 
@@ -188,7 +188,7 @@ final class NDArrayTests: XCTestCase {
     }
 
     func testIndex() {
-        let a = NDArray([
+        let a = NDArray<Int>([
             3, 30,
             2, 20,
             1, 10,
@@ -205,7 +205,7 @@ final class NDArrayTests: XCTestCase {
     }
 
     func testScalarElementWiseAdd() {
-        let a = NDArray([
+        let a = NDArray<Int>([
             3, 30,
             2, 20,
             1, 10,
@@ -230,7 +230,7 @@ final class NDArrayTests: XCTestCase {
     //         _ = elementWiseInParallel(a, b, apply: +)
     //     }
     //     let timeSerial = timeIt(repetitions: 1) {
-    //         _ = elementWise(a, b, apply: +)
+    //         _ = elementwise(a, b, apply: +)
     //     }
 
     //     print("time parallel:", timeParallel)
@@ -253,8 +253,8 @@ final class NDArrayTests: XCTestCase {
     }
 
     func testAnything() {
-        print(NDArray(scalar: 0))
-        print(NDArray([1, 2, 3, 4]))
+        print(NDArray<Int>(scalar: 0))
+        print(NDArray<Int>([1, 2, 3, 4]))
         print(NDArray<Int>([
             [1, 2, 3],
             [4, 5, 6],
@@ -286,7 +286,7 @@ final class NDArrayTests: XCTestCase {
             [4, 5, 6, 7, 8, 9, 10],
         ])[0..., ((-1)...).stride(2)])
 
-        print(NDArray([1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 10])[((-1)...).stride(-1)])
+        print(NDArray<Int>([1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 10])[((-1)...).stride(-1)])
     }
 
     static var allTests = [

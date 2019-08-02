@@ -66,9 +66,9 @@ NDArray<Point>[2]([Point(x: 5.0, y: 7.0), Point(x: 8.0, y: 10.0)])
 ```
 You can also apply generic transformations over the data, the previous could have been written as:
 ```swift
-elementWise(a, b, apply: +)
+elementwise(a, b, apply: +)
 // or
-elementWise(a, b) { $0 + $1 }
+elementwise(a, b) { $0 + $1 }
 ```
 For heavy computation you can use the parallelized version:
 ```swift
