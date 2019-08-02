@@ -1,6 +1,6 @@
 # NDArray
 
-NDArray is a multidimensional array library written in Swift that aims to become the equivalent of `numpy` in Swift's emerging data science ecosystem. This project is in a very early stage and has a long but exciting road ahead, contributions are welcome!
+NDArray is a multidimensional array library written in Swift that aims to become the equivalent of `numpy` in Swift's emerging data science ecosystem. This project is in a very early stage and has a long but exciting road ahead!
 
 ## Goals
 
@@ -64,7 +64,7 @@ print(a + b)
 NDArray<Point>[2]([Point(x: 5.0, y: 7.0), Point(x: 8.0, y: 10.0)])
 */
 ```
-You can also apply generic transformations other the data, the previous could have been written as:
+You can also apply generic transformations over the data, the previous could have been written as:
 ```swift
 elementWise(a, b, apply: +)
 // or
@@ -77,7 +77,7 @@ elementWiseInParallel(a, b) {
     return c
 }
 ```
-In the future `NDArray` should be able to estimate the best strategy based on the type and size of the data.
+In the future `NDArray` should be able to estimate the best strategy (serial/parallelized) based on the type and size of the data.
 
 ## Goals Discussion
 Each of NDArray's goals builds upon the previous and users should be able to opt-in for the features they need or can have access to in their environment.
@@ -89,7 +89,7 @@ The first goal is the definition of the library's basic API using pure Swift wit
 The second goal is what you would expect from a HPC numeric library and thanks to Swift's capability of extending types and specializing functions it seems very plausible to implement this as an addon without loosing performance.
 
 #### Automatic Differentiation
-The third an obvious must have, Swift for TensorFlow's compiler compiler with automatic differentiation is arguably the future of ML and we should use it.
+The third an obvious must have, Swift for TensorFlow's compiler with automatic differentiation is arguably the future of ML and we should use it.
 
 ## Roadmap
 ##### 0.1
@@ -101,11 +101,14 @@ The third an obvious must have, Swift for TensorFlow's compiler compiler with au
 - [ ] Assignment (coming soon)
 - [ ] More operators
 - [ ] API + Codebase cleanup
+- [ ] Documentation
 ##### 0.2
-- [ ] BLAS / LAPACK integration
+- [x] Link BLAS and LAPACK
+- [ ] Specialize operators using BLAS and LAPACK
+- [ ] `dot` product, and others
+Initial 
 ##### 0.3
 - [ ] Differentiable conformance
-## Architecture
 
 ## Meta
 Cristian Garcia – cgarcia.e88@gmail.com
