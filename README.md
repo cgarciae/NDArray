@@ -11,7 +11,7 @@ NDArray is a multidimensional array library written in Swift that aims to become
 ## Installation
 You can install it via SwiftPM via:
 ```swift
-.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.1")
+.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.2")
 ```
 It might work on other compatible package managers. This package is only tested in Swift 5.1, compatibility with previous version is not guaranteed.  Although specified in the `Package.swift` file you might also need to run these commands to setup your environment.
 
