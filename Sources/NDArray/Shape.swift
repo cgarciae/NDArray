@@ -1,17 +1,19 @@
 
 
-public struct Shape {
-    public let dimensions: [DimensionProtocol]
-    public let dimensionStrides: [Int]
+@usableFromInline internal struct Shape {
+    @usableFromInline let dimensions: [DimensionProtocol]
+    @usableFromInline let dimensionStrides: [Int]
     // this name might be misleading, its the shape as the user sees it, not its actual memory content
-    public let virtualShape: [Int]
-    public let nonSequeezedDimensions: [(index: Int, dimension: DimensionProtocol)]
+    @usableFromInline let virtualShape: [Int]
+    // similar to virtualShape, these are the dimension that the user sees, but there can be more
+    // SqueezedDimension that still contain necesary memory_stride information
+    @usableFromInline let nonSequeezedDimensions: [(index: Int, dimension: DimensionProtocol)]
 
-    public func realDimension(at index: Int) -> DimensionProtocol {
+    @usableFromInline func realDimension(at index: Int) -> DimensionProtocol {
         nonSequeezedDimensions.first { $0.index == index }!.dimension
     }
 
-    public init(_ shape: [Int]) {
+    @usableFromInline init(_ shape: [Int]) {
         let dimensionStrides = getDimensionStrides(of: shape)
 
         let dimensions = (0 ..< shape.count)
@@ -27,7 +29,7 @@ public struct Shape {
         self.init(dimensions)
     }
 
-    public init(_ dimensions: [DimensionProtocol]) {
+    @usableFromInline init(_ dimensions: [DimensionProtocol]) {
         self.dimensions = dimensions
         let dimensionLengths = dimensions.map { $0.length }
         dimensionStrides = getDimensionStrides(of: dimensionLengths)

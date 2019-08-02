@@ -21,10 +21,9 @@ func constructArrayAndShape<Scalar>(_ data: [Any], _ shape: [Int]? = nil) -> ([S
 
 public struct NDArray<Scalar> {
     public let data: [Scalar]
-    public let _shape: Shape
+    @usableFromInline internal let _shape: Shape
 
-    @inlinable
-    public var shape: [Int] { _shape.virtualShape }
+    @inlinable public var shape: [Int] { _shape.virtualShape }
 
     public init(_ data: [Any], shape: [Int]? = nil) {
         (self.data, _shape) = constructArrayAndShape(data, shape)
@@ -34,7 +33,7 @@ public struct NDArray<Scalar> {
         (self.data, _shape) = constructArrayAndShape(data, shape)
     }
 
-    public init(_ data: [Scalar], shape: Shape) {
+    @usableFromInline internal init(_ data: [Scalar], shape: Shape) {
         self.data = data
         _shape = shape
     }
