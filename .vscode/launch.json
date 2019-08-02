@@ -9,7 +9,7 @@
             "request": "launch",
             "preLaunchTask": "swift-build",
             "name": "Swift: project",
-            "program": "${workspaceFolder}/.build/debug/${workspaceFolderBasename}",
+            "program": "${workspaceFolder}/.build/debug/Debug",
             "args": [],
             "sourceLanguages": [
                 "swift"

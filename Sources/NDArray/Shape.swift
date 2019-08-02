@@ -1,12 +1,9 @@
 
-public protocol ShapeProtocol {
-    // func indexIterator() -> AnyIterator<Int>
-}
 
-public struct Shape: ShapeProtocol {
+public struct Shape {
     public let dimensions: [DimensionProtocol]
-    public let dimensionLengths: [Int]
     public let dimensionStrides: [Int]
+    // this name might be misleading, its the shape as the user sees it, not its actual memory content
     public let virtualShape: [Int]
     public let nonSequeezedDimensions: [(index: Int, dimension: DimensionProtocol)]
 
@@ -32,7 +29,7 @@ public struct Shape: ShapeProtocol {
 
     public init(_ dimensions: [DimensionProtocol]) {
         self.dimensions = dimensions
-        dimensionLengths = dimensions.map { $0.length }
+        let dimensionLengths = dimensions.map { $0.length }
         dimensionStrides = getDimensionStrides(of: dimensionLengths)
         virtualShape = dimensions.filter { !($0 is SqueezedDimension) }.map { $0.length }
         nonSequeezedDimensions = dimensions

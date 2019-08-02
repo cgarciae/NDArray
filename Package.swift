@@ -11,6 +11,10 @@ let package = Package(
             name: "NDArray",
             targets: ["NDArray"]
         ),
+        .library(
+            name: "Debug",
+            targets: ["Debug"]
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -40,6 +44,10 @@ let package = Package(
         .target(
             name: "NDArray",
             dependencies: ["CBlas", "CLapack"]
+        ),
+        .target(
+            name: "Debug",
+            dependencies: ["NDArray"]
         ),
         .testTarget(
             name: "NDArrayTests",
