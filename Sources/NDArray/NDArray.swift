@@ -45,7 +45,7 @@ public struct NDArray<Scalar> {
         self.data = Ref(data)
     }
 
-    public init(scalar data: Scalar) {
+    public init(_ data: Scalar) {
         arrayShape = ArrayShape([DimensionProtocol]())
         self.data = Ref([data])
     }

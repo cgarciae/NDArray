@@ -1,6 +1,6 @@
 import NDArray
 
-print(NDArray<Int>(scalar: 0))
+print(NDArray<Int>(0))
 print(NDArray<Int>([1, 2, 3, 4]))
 print(NDArray<Int>([
     [1, 2, 3],

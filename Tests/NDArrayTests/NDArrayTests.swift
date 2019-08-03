@@ -164,7 +164,7 @@ final class NDArrayTests: XCTestCase {
             ]
         )
 
-        print((a + b) * a)
+        _ = (a + b) * a
     }
 
     func testExample2() {
@@ -175,7 +175,7 @@ final class NDArrayTests: XCTestCase {
             [Point(x: 4, y: 5), Point(x: 6, y: 7)]
         )
 
-        print(a + b)
+        _ = a + b
     }
 
     func testElementWiseApplyParallel() {
@@ -271,8 +271,41 @@ final class NDArrayTests: XCTestCase {
         a[0...] = NDArray<Int>([1, 1, 1, 1])
         b[0...] = NDArray<Int>([2, 2, 2, 2])
 
-        print(a)
-        print(b)
+        XCTAssertEqual(a.data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.data.value, [2, 2, 2, 2])
+    }
+
+    func testAssign2() {
+        var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
+        var b = a
+
+        a[0...] = NDArray(1)
+        b[0...] = NDArray(2)
+
+        XCTAssertEqual(a.data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.data.value, [2, 2, 2, 2])
+    }
+
+    func testAssign3() {
+        var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
+        var b = a
+
+        a[0...] = NDArray(1)
+        b[0...] = NDArray(2)
+
+        XCTAssertEqual(a.data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.data.value, [2, 2, 2, 2])
+    }
+
+    func testAssign4() {
+        var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
+        var b = a
+
+        a[0...] = [1, 1, 1, 1]
+        b[0...] = [2, 2, 2, 2]
+
+        XCTAssertEqual(a.data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.data.value, [2, 2, 2, 2])
     }
 
     func testTransposed() {
@@ -308,5 +341,8 @@ final class NDArrayTests: XCTestCase {
         ("testBroadcast2", testBroadcast2),
         ("testBroadcast3", testBroadcast3),
         ("testAssign", testAssign),
+        ("testAssign2", testAssign2),
+        ("testAssign3", testAssign3),
+        ("testAssign4", testAssign4),
     ]
 }

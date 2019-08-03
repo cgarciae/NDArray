@@ -57,6 +57,8 @@ extension NDArray {
         }
 
         mutating set(valuesNDArray) {
+            var valuesNDArray = valuesNDArray
+
             let allAreUnmodifiedlDimensions = arrayShape
                 .dimensions.lazy
                 .map { $0 is UnmodifiedDimension }
@@ -68,8 +70,12 @@ extension NDArray {
                 arrayShape = cp.arrayShape
             }
 
-            let viewNDArray = self[ranges]
+            var viewNDArray = self[ranges]
             let nElements = viewNDArray.shape.reduce(1, *)
+
+            if viewNDArray.shape != valuesNDArray.shape {
+                (viewNDArray, valuesNDArray) = broadcast(viewNDArray, and: valuesNDArray)
+            }
 
             viewNDArray.data.value.withUnsafeMutableBufferPointer { view in
                 valuesNDArray.data.value.withUnsafeBufferPointer { values in

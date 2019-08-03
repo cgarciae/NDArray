@@ -1,6 +1,15 @@
 
 @usableFromInline
 internal func broadcast(_ left: ArrayShape, and right: ArrayShape) -> (left: ArrayShape, right: ArrayShape) {
+    var left = left
+    var right = right
+
+    if left.virtualShape.count == 0 {
+        left = ArrayShape(Array(repeating: SingularDimension(), count: right.virtualShape.count))
+    } else if right.virtualShape.count == 0 {
+        right = ArrayShape(Array(repeating: SingularDimension(), count: left.virtualShape.count))
+    }
+
     var leftDimensions = left.dimensions
     var rightDimensions = right.dimensions
 
@@ -23,7 +32,7 @@ internal func broadcast(_ left: ArrayShape, and right: ArrayShape) -> (left: Arr
 @usableFromInline
 internal func broadcast<A, B>(_ left: NDArray<A>, and right: NDArray<B>) -> (left: NDArray<A>, right: NDArray<B>) {
     precondition(
-        zip(left.shape, right.shape).map { leftLength, rightLength in
+        left.shape == [] || right.shape == [] || zip(left.shape, right.shape).map { leftLength, rightLength in
             leftLength == rightLength || leftLength == 1 || rightLength == 1
         }.reduce(true) { $0 && $1 },
         "Cannot broadcast shapes \(left.shape) and \(right.shape)"
