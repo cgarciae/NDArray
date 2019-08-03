@@ -80,7 +80,13 @@ public func elementwise<A, B, Z>(
     _ ndArrayB: NDArray<B>,
     apply f: (A, B) -> Z
 ) -> NDArray<Z> {
-    precondition(ndArrayA.data.count == ndArrayB.data.count)
+    var ndArrayA = ndArrayA
+    var ndArrayB = ndArrayB
+
+    if ndArrayA.shape != ndArrayB.shape {
+        (ndArrayA, ndArrayB) = broadcast(ndArrayA, and: ndArrayB)
+    }
+
     let nElements = ndArrayA.shape.reduce(1, *)
 
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
@@ -102,6 +108,24 @@ public func elementwise<A, B, Z>(
         arrayZ,
         shape: ndArrayA.shape
     )
+}
+
+@inlinable
+public func elementwise<A, B, Z>(
+    _ ndArrayA: NDArray<A>,
+    _ b: B,
+    apply f: (A, B) -> Z
+) -> NDArray<Z> {
+    elementwise(ndArrayA) { a in f(a, b) }
+}
+
+@inlinable
+public func elementwise<A, B, Z>(
+    _ a: A,
+    _ ndArrayB: NDArray<B>,
+    apply f: (A, B) -> Z
+) -> NDArray<Z> {
+    elementwise(ndArrayB) { b in f(a, b) }
 }
 
 @inlinable
@@ -144,4 +168,24 @@ public func elementwiseInParallel<A, B, Z>(
         arrayZ,
         shape: ndArrayA.shape
     )
+}
+
+@inlinable
+public func elementwiseInParallel<A, B, Z>(
+    _ ndArrayA: NDArray<A>,
+    _ b: B,
+    workers: Int = CPU_COUNT,
+    apply f: @escaping (A, B) -> Z
+) -> NDArray<Z> {
+    elementwiseInParallel(ndArrayA, workers: workers) { a in f(a, b) }
+}
+
+@inlinable
+public func elementwiseInParallel<A, B, Z>(
+    _ a: A,
+    _ ndArrayB: NDArray<B>,
+    workers: Int = CPU_COUNT,
+    apply f: @escaping (A, B) -> Z
+) -> NDArray<Z> {
+    elementwiseInParallel(ndArrayB, workers: workers) { b in f(a, b) }
 }

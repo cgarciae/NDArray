@@ -10,6 +10,6 @@ extension NDArray {
             dimensions[realIndexCurrent] = array_shape.nonSequeezedDimensions[virtualIndexNext].dimension
         }
 
-        return NDArray(data, shape: Shape(dimensions))
+        return NDArray(data, shape: ArrayShape(dimensions))
     }
 }

@@ -114,7 +114,7 @@ final class DimensionTests: XCTestCase {
     }
 
     func testShapeInit() {
-        let shape = Shape([5, 1, 4, 2])
+        let shape = ArrayShape([5, 1, 4, 2])
 
         XCTAssertEqual(
             shape.dimensions.map { $0.memory_layout.stride },

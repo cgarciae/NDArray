@@ -42,7 +42,7 @@ final class NDArrayTests: XCTestCase {
         let a = NDArray<Int>([1, 2, 3], shape: [3])
         let b = NDArray<Int>([1, 2, 3], shape: [3])
 
-        let c = elementwise(a, b, apply: +)
+        let c = a + b
 
         XCTAssert(c.data == [2, 4, 6])
     }
@@ -63,7 +63,7 @@ final class NDArrayTests: XCTestCase {
             shape: [2, 3]
         )
 
-        let c = elementwise(a, b, apply: +)
+        let c = a + b
 
         XCTAssertEqual(c.data, a.data.map { $0 * 2 })
     }
@@ -110,7 +110,7 @@ final class NDArrayTests: XCTestCase {
             shape: [2, 2, 3]
         )
 
-        let c = elementwise(a, b, apply: +)
+        let c = a + b
 
         XCTAssertEqual(c.data, a.data.map { $0 * 2 })
     }
@@ -182,7 +182,7 @@ final class NDArrayTests: XCTestCase {
         let a = NDArray<Int>(Array(1 ... 100), shape: [100])
         let b = NDArray<Int>(Array(1 ... 100), shape: [100])
 
-        let c = elementwiseInParallel(a, b, apply: +)
+        let c = a + b
 
         XCTAssert(c.data == a.data.map { $0 * 2 })
     }
@@ -222,20 +222,47 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(d.data, [21])
     }
 
-    // func testElementWiseApplyParallelBenchmark() {
-    //     let a = Array(1 ... 20_000_000)
-    //     let b = Array(1 ... 20_000_000)
+    func testBroadcast1() {
+        let a = NDArray<Int>([1, 2, 3, 4], shape: [1, 4])
+        let b = NDArray<Int>([1, 2, 3, 4], shape: [4, 1])
 
-    //     let timeParallel = timeIt(repetitions: 1) {
-    //         _ = elementwiseInParallel(a, b, apply: +)
-    //     }
-    //     let timeSerial = timeIt(repetitions: 1) {
-    //         _ = elementwise(a, b, apply: +)
-    //     }
+        let c = a + b
 
-    //     print("time parallel:", timeParallel)
-    //     print("time serial:", timeSerial)
-    // }
+        let target = NDArray<Int>([
+            [2, 3, 4, 5],
+            [3, 4, 5, 6],
+            [4, 5, 6, 7],
+            [5, 6, 7, 8],
+        ])
+
+        XCTAssertEqual(c.data, target.data)
+    }
+
+    func testBroadcast2() {
+        let a = NDArray<Int>([1, 2, 3, 4], shape: [1, 4])
+        let b = 1
+
+        let c = a + b
+
+        let target = NDArray<Int>([
+            2, 3, 4, 5,
+        ])
+
+        XCTAssertEqual(c.data, target.data)
+    }
+
+    func testBroadcast3() {
+        let a = NDArray<Int>([1, 2, 3, 4], shape: [1, 4])
+        let b = 2
+
+        let c = a * b
+
+        let target = NDArray<Int>([
+            2, 4, 5, 8,
+        ])
+
+        XCTAssertEqual(c.data, target.data)
+    }
 
     func testTransposed() {
         let a = NDArray<Int>([
@@ -304,5 +331,8 @@ final class NDArrayTests: XCTestCase {
         ("testTransposed", testTransposed),
         ("testExample", testExample),
         ("testExample2", testExample2),
+        ("testBroadcast1", testBroadcast1),
+        ("testBroadcast2", testBroadcast2),
+        ("testBroadcast3", testBroadcast3),
     ]
 }

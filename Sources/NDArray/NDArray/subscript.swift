@@ -51,7 +51,7 @@ extension NDArray {
             }
         }
 
-        return NDArray(data, shape: Shape(dimensions))
+        return NDArray(data, shape: ArrayShape(dimensions))
     }
 
     @inlinable

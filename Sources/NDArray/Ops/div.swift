@@ -3,6 +3,14 @@ extension NDArray where Scalar: Divisible {
     public static func / (lhs: NDArray<Scalar>, rhs: NDArray<Scalar>) -> NDArray<Scalar> {
         elementwise(lhs, rhs, apply: /)
     }
+
+    public static func / (lhs: Scalar, rhs: NDArray<Scalar>) -> NDArray<Scalar> {
+        elementwise(lhs, rhs, apply: /)
+    }
+
+    public static func / (lhs: NDArray<Scalar>, rhs: Scalar) -> NDArray<Scalar> {
+        elementwise(lhs, rhs, apply: /)
+    }
 }
 
 // import func CBlas.cblas_saxpy
