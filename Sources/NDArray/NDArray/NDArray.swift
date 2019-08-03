@@ -2,7 +2,7 @@
 public struct NDArray<Scalar> {
     public let data: [Scalar]
     @inlinable public var shape: [Int] { array_shape.virtualShape }
-    @usableFromInline internal let array_shape: Shape
+    @usableFromInline internal let array_shape: ArrayShape
 
     public init(_ data: [Any], shape: [Int]? = nil) {
         let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
@@ -20,18 +20,18 @@ public struct NDArray<Scalar> {
         }
 
         self.data = flatData
-        array_shape = Shape(shape ?? calculatedShape)
+        array_shape = ArrayShape(shape ?? calculatedShape)
     }
 
     @usableFromInline
-    internal init(_ data: [Scalar], shape: Shape) {
+    internal init(_ data: [Scalar], shape: ArrayShape) {
         self.data = data
         array_shape = shape
     }
 
     public init(scalar data: Scalar) {
         self.data = [data]
-        array_shape = Shape([DimensionProtocol]())
+        array_shape = ArrayShape([DimensionProtocol]())
     }
 
     @inlinable
