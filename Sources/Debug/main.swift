@@ -1,6 +1,6 @@
 import NDArray
 
-print(NDArray<Int>(scalar: 0))
+print(NDArray<Int>(0))
 print(NDArray<Int>([1, 2, 3, 4]))
 print(NDArray<Int>([
     [1, 2, 3],
@@ -22,3 +22,15 @@ print(NDArray<Int>(
         ],
     ]
 ))
+
+print(NDArray<Int>([
+    [1, 2, 3, 4, 5, 6, 7],
+    [4, 5, 6, 7, 8, 9, 10],
+])[0..., 1 ..< 5][0..., ..<3])
+
+print(NDArray<Int>([
+    [1, 2, 3, 4, 5, 6, 7],
+    [4, 5, 6, 7, 8, 9, 10],
+])[0..., ((-1)...).stride(2)])
+
+print(NDArray<Int>([1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 10])[((-1)...).stride(-1)])
