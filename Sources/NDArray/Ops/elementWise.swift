@@ -18,7 +18,7 @@ public func elementwise<A, Z>(
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
 
-        ndArrayA.data.withUnsafeBufferPointer { arrayA in
+        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
             for i in 0 ..< nElements {
                 arrayZ[i] = f(
                     arrayA[ndArrayA.realIndex(of: i)]
@@ -44,7 +44,7 @@ public func elementwiseInParallel<A, Z>(
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
 
-        ndArrayA.data.withUnsafeBufferPointer { arrayA in
+        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
             let group = DispatchGroup()
 
             for range in splitRanges(total: nElements, splits: workers) {
@@ -92,8 +92,8 @@ public func elementwise<A, B, Z>(
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
 
-        ndArrayA.data.withUnsafeBufferPointer { arrayA in
-            ndArrayB.data.withUnsafeBufferPointer { arrayB in
+        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
+            ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
                 for i in 0 ..< nElements {
                     arrayZ[i] = f(
                         arrayA[ndArrayA.realIndex(of: i)],
@@ -141,8 +141,8 @@ public func elementwiseInParallel<A, B, Z>(
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
 
-        ndArrayA.data.withUnsafeBufferPointer { arrayA in
-            ndArrayB.data.withUnsafeBufferPointer { arrayB in
+        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
+            ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
                 let group = DispatchGroup()
 
                 for range in splitRanges(total: nElements, splits: workers) {

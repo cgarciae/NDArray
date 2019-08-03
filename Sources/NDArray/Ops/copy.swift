@@ -6,7 +6,7 @@ extension NDArray {
         let arrayC = [Scalar](unsafeUninitializedCapacity: nElements) { arrayC, count in
             count = nElements
 
-            self.data.withUnsafeBufferPointer { arrayA in
+            self.data.value.withUnsafeBufferPointer { arrayA in
                 for i in 0 ..< nElements {
                     arrayC[i] = arrayA[self.realIndex(of: i)]
                 }

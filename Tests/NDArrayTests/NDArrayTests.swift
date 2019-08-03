@@ -44,7 +44,7 @@ final class NDArrayTests: XCTestCase {
 
         let c = a + b
 
-        XCTAssert(c.data == [2, 4, 6])
+        XCTAssert(c.data.value == [2, 4, 6])
     }
 
     func testElementWiseApply2D() {
@@ -65,7 +65,7 @@ final class NDArrayTests: XCTestCase {
 
         let c = a + b
 
-        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+        XCTAssertEqual(c.data.value, a.data.value.map { $0 * 2 })
     }
 
     func testConstructor() {
@@ -85,7 +85,7 @@ final class NDArrayTests: XCTestCase {
 
         XCTAssertEqual(a.shape, [2, 3])
         XCTAssertEqual(b.shape, [2, 3])
-        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+        XCTAssertEqual(c.data.value, a.data.value.map { $0 * 2 })
     }
 
     func testElementWiseApply3D() {
@@ -112,7 +112,7 @@ final class NDArrayTests: XCTestCase {
 
         let c = a + b
 
-        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+        XCTAssertEqual(c.data.value, a.data.value.map { $0 * 2 })
     }
 
     func testElementWiseApply3DConstructor() {
@@ -147,7 +147,7 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(a.shape, [2, 2, 3])
         XCTAssertEqual(b.shape, [2, 2, 3])
         XCTAssertEqual(c.shape, [2, 2, 3])
-        XCTAssertEqual(c.data, a.data.map { $0 * 2 })
+        XCTAssertEqual(c.data.value, a.data.value.map { $0 * 2 })
     }
 
     func testExample() {
@@ -184,7 +184,7 @@ final class NDArrayTests: XCTestCase {
 
         let c = a + b
 
-        XCTAssert(c.data == a.data.map { $0 * 2 })
+        XCTAssert(c.data.value == a.data.value.map { $0 * 2 })
     }
 
     func testIndex() {
@@ -201,7 +201,7 @@ final class NDArrayTests: XCTestCase {
 
         XCTAssertEqual(b.shape, [])
         XCTAssertEqual(realIndex, 3)
-        XCTAssertEqual(b.data[realIndex], 20)
+        XCTAssertEqual(b.data.value[realIndex], 20)
     }
 
     func testScalarElementWiseAdd() {
@@ -217,9 +217,9 @@ final class NDArrayTests: XCTestCase {
 
         let d = b + c
 
-        XCTAssertEqual(b.copy().data, [20])
-        XCTAssertEqual(c.copy().data, [1])
-        XCTAssertEqual(d.data, [21])
+        XCTAssertEqual(b.copy().data.value, [20])
+        XCTAssertEqual(c.copy().data.value, [1])
+        XCTAssertEqual(d.data.value, [21])
     }
 
     func testBroadcast1() {
@@ -235,7 +235,7 @@ final class NDArrayTests: XCTestCase {
             [5, 6, 7, 8],
         ])
 
-        XCTAssertEqual(c.data, target.data)
+        XCTAssertEqual(c.data.value, target.data.value)
     }
 
     func testBroadcast2() {
@@ -248,7 +248,7 @@ final class NDArrayTests: XCTestCase {
             2, 3, 4, 5,
         ])
 
-        XCTAssertEqual(c.data, target.data)
+        XCTAssertEqual(c.data.value, target.data.value)
     }
 
     func testBroadcast3() {
@@ -258,10 +258,21 @@ final class NDArrayTests: XCTestCase {
         let c = a * b
 
         let target = NDArray<Int>([
-            2, 4, 5, 8,
+            2, 4, 6, 8,
         ])
 
-        XCTAssertEqual(c.data, target.data)
+        XCTAssertEqual(c.data.value, target.data.value)
+    }
+
+    func testAssign() {
+        var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
+        var b = a
+
+        a[0...] = NDArray<Int>([1, 1, 1, 1])
+        b[0...] = NDArray<Int>([2, 2, 2, 2])
+
+        print(a)
+        print(b)
     }
 
     func testTransposed() {
@@ -270,50 +281,13 @@ final class NDArrayTests: XCTestCase {
             [4, 5, 6],
         ]).transposed([1, 0]).copy()
 
-        XCTAssertEqual(a.data, [1, 4, 2, 5, 3, 6])
+        XCTAssertEqual(a.data.value, [1, 4, 2, 5, 3, 6])
     }
 
     func testRangesSplit() {
         let ranges = splitRanges(total: 70, splits: 11)
 
         XCTAssert(ranges.count == 11)
-    }
-
-    func testAnything() {
-        print(NDArray<Int>(scalar: 0))
-        print(NDArray<Int>([1, 2, 3, 4]))
-        print(NDArray<Int>([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]))
-        print(NDArray<Int>([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]).transposed([1, 0]))
-        print(NDArray<Int>(
-            [
-                [
-                    [1, 2, 3],
-                    [4, 5, 6],
-                ],
-                [
-                    [7, 8, 9],
-                    [10, 11, 12],
-                ],
-            ]
-        ))
-
-        print(NDArray<Int>([
-            [1, 2, 3, 4, 5, 6, 7],
-            [4, 5, 6, 7, 8, 9, 10],
-        ])[0..., 1 ..< 5][0..., ..<3])
-
-        print(NDArray<Int>([
-            [1, 2, 3, 4, 5, 6, 7],
-            [4, 5, 6, 7, 8, 9, 10],
-        ])[0..., ((-1)...).stride(2)])
-
-        print(NDArray<Int>([1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 10])[((-1)...).stride(-1)])
     }
 
     static var allTests = [
@@ -327,12 +301,12 @@ final class NDArrayTests: XCTestCase {
         ("testScalarElementWiseAdd", testScalarElementWiseAdd),
         ("testConstructor", testConstructor),
         ("testElementWiseApply3DConstructor", testElementWiseApply3DConstructor),
-        ("testAnything", testAnything),
         ("testTransposed", testTransposed),
         ("testExample", testExample),
         ("testExample2", testExample2),
         ("testBroadcast1", testBroadcast1),
         ("testBroadcast2", testBroadcast2),
         ("testBroadcast3", testBroadcast3),
+        ("testAssign", testAssign),
     ]
 }

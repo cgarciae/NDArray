@@ -29,7 +29,7 @@ internal func broadcast<A, B>(_ left: NDArray<A>, and right: NDArray<B>) -> (lef
         "Cannot broadcast shapes \(left.shape) and \(right.shape)"
     )
 
-    let (leftShape, rightShape) = broadcast(left.array_shape, and: right.array_shape)
+    let (leftShape, rightShape) = broadcast(left.arrayShape, and: right.arrayShape)
 
     return (
         left: NDArray(left.data, shape: leftShape),

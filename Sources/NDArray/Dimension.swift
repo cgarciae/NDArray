@@ -19,6 +19,7 @@ public protocol DimensionProtocol {
 }
 
 public protocol SqueezedDimension: DimensionProtocol {}
+public protocol UnmodifiedDimension: DimensionProtocol {}
 
 extension DimensionProtocol {
     @inlinable
@@ -27,7 +28,7 @@ extension DimensionProtocol {
     }
 }
 
-public struct Dimension: DimensionProtocol {
+public struct Dimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int
     public let memory_layout: MemoryLayout
 
@@ -40,7 +41,7 @@ public struct Dimension: DimensionProtocol {
     public func realIndex(of index: Int) -> Int { index }
 }
 
-public struct SingularDimension: DimensionProtocol {
+public struct SingularDimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int = 1
     public let memory_layout: MemoryLayout
 
