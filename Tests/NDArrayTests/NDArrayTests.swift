@@ -323,6 +323,18 @@ final class NDArrayTests: XCTestCase {
         XCTAssert(ranges.count == 11)
     }
 
+    func testDifferentiable() {
+        let a: NDArray<Float> = [1, 2, 3, 4]
+
+        let da = a.gradient { a -> Float in
+            let x = a.sum()
+
+            return x * x
+        }
+
+        print(da)
+    }
+
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApply2D", testElementWiseApply2D),
@@ -344,5 +356,6 @@ final class NDArrayTests: XCTestCase {
         ("testAssign2", testAssign2),
         ("testAssign3", testAssign3),
         ("testAssign4", testAssign4),
+        ("testDifferentiable", testDifferentiable),
     ]
 }
