@@ -1,4 +1,63 @@
 
+public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linearIndex: Int, rectangularIndex: Ref<[Int]>)> {
+    AnySequence { () -> AnyIterator<(linearIndex: Int, rectangularIndex: Ref<[Int]>)> in
+
+        var iterator = range.makeIterator()
+
+        let dimensionStrides = getDimensionStrides(of: shape)
+
+        let rectangularIndex = Ref(Array(repeating: 0, count: shape.count))
+
+        var first = true
+
+        return AnyIterator { () -> (linearIndex: Int, rectangularIndex: Ref<[Int]>)? in
+            guard let current = iterator.next() else { return nil }
+
+            if first {
+                first = false
+                var remainder = current
+
+                rectangularIndex.value.withUnsafeMutableBufferPointer { rectangularIndex in
+                    for i in 0 ..< shape.count {
+                        if shape[i] > 1 {
+                            let index: Int
+                            (index, remainder) = remainder.quotientAndRemainder(dividingBy: dimensionStrides[i])
+                            rectangularIndex[i] = index
+                        }
+                    }
+                }
+
+                return (
+                    linearIndex: current,
+                    rectangularIndex: rectangularIndex
+                )
+            }
+
+            var pos = shape.count - 1
+
+            rectangularIndex.value.withUnsafeMutableBufferPointer { rectangularIndex in
+                shape.withUnsafeBufferPointer { shape in
+                    while pos >= 0 {
+                        let nextValue = rectangularIndex[pos] + 1
+                        if nextValue % shape[pos] == 0 {
+                            rectangularIndex[pos] = 0
+                            pos -= 1
+                        } else {
+                            rectangularIndex[pos] = nextValue
+                            break
+                        }
+                    }
+                }
+            }
+
+            return (
+                linearIndex: current,
+                rectangularIndex: rectangularIndex
+            )
+        }
+    }
+}
+
 public func flattenArrays<A>(_ array: [Any]) -> (array: [A], shape: [Int]) {
     if array.count == 0 {
         return (

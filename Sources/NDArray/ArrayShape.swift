@@ -56,10 +56,27 @@
                     (quotient, reminder) = state.reminder.quotientAndRemainder(dividingBy: dimensionStrides[i])
                 }
 
-                let accumulatedIndex = dimensions[i].memoryStridedValue(of: quotient) + state.accumulatedIndex
+                let accumulatedIndex = dimensions[i].strideValue(of: quotient) + state.accumulatedIndex
 
                 return (accumulatedIndex: accumulatedIndex, reminder: reminder)
             }
             .accumulatedIndex
+    }
+
+    @inlinable
+    public subscript(_ indexes: [Int]) -> Int {
+        let nonSequeezedValue = zip(indexes, nonSequeezedDimensions)
+            .lazy
+            .map { index, indexDimension in
+                indexDimension.dimension.strideValue(of: index)
+            }.reduce(0, +)
+
+        let squeezedValue = dimensions
+            .lazy
+            .filter { $0 is SqueezedDimension }
+            .map { $0.strideValue(of: 0) }
+            .reduce(0, +)
+
+        return nonSequeezedValue + squeezedValue
     }
 }

@@ -1,11 +1,13 @@
 
-@usableFromInline
-internal final class Ref<A> {
+
+public final class Ref<A>: CustomStringConvertible {
     @usableFromInline var value: A
 
     @usableFromInline init(_ value: A) {
         self.value = value
     }
+
+    public var description: String { "\(value)" }
 }
 
 public struct NDArray<Scalar> {

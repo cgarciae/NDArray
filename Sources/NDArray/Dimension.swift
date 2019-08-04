@@ -23,7 +23,7 @@ public protocol UnmodifiedDimension: DimensionProtocol {}
 
 extension DimensionProtocol {
     @inlinable
-    public func memoryStridedValue(of index: Int) -> Int {
+    public func strideValue(of index: Int) -> Int {
         realIndex(of: index) * memory_layout.stride
     }
 }
