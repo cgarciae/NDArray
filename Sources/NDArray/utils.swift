@@ -3,11 +3,8 @@ public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linea
     AnySequence { () -> AnyIterator<(linearIndex: Int, rectangularIndex: Ref<[Int]>)> in
 
         var iterator = range.makeIterator()
-
         let dimensionStrides = getDimensionStrides(of: shape)
-
         let rectangularIndex = Ref(Array(repeating: 0, count: shape.count))
-
         var first = true
 
         return AnyIterator { () -> (linearIndex: Int, rectangularIndex: Ref<[Int]>)? in
@@ -18,11 +15,14 @@ public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linea
                 var remainder = current
 
                 rectangularIndex.value.withUnsafeMutableBufferPointer { rectangularIndex in
-                    for i in 0 ..< shape.count {
-                        if shape[i] > 1 {
-                            let index: Int
-                            (index, remainder) = remainder.quotientAndRemainder(dividingBy: dimensionStrides[i])
-                            rectangularIndex[i] = index
+                    shape.withUnsafeBufferPointer { shape in
+                        for i in 0 ..< shape.count {
+                            if shape[i] > 1 {
+                                let index: Int
+                                (index, remainder) = remainder.quotientAndRemainder(dividingBy: dimensionStrides[i])
+
+                                rectangularIndex[i] = index
+                            }
                         }
                     }
                 }

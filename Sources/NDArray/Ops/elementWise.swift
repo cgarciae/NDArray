@@ -19,9 +19,14 @@ public func elementwise<A, Z>(
         count = nElements
 
         ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            for i in 0 ..< nElements {
-                arrayZ[i] = f(
-                    arrayA[ndArrayA.realIndex(of: i)]
+            // for i in 0 ..< nElements {
+            //     arrayZ[i] = f(
+            //         arrayA[ndArrayA.realIndex(of: i)]
+            //     )
+            // }
+            for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                arrayZ[index.linearIndex] = f(
+                    arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)]
                 )
             }
         }
@@ -51,11 +56,13 @@ public func elementwiseInParallel<A, Z>(
                 group.enter()
 
                 DISPATCH.async { [arrayZ] in
-                    for i in range {
-                        arrayZ[i] = f(
-                            arrayA[ndArrayA.realIndex(of: i)]
+
+                    for index in indexSequence(range: range, shape: ndArrayA.shape) {
+                        arrayZ[index.linearIndex] = f(
+                            arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)]
                         )
                     }
+
                     group.leave()
                 }
             }
@@ -94,10 +101,10 @@ public func elementwise<A, B, Z>(
 
         ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
             ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
-                for i in 0 ..< nElements {
-                    arrayZ[i] = f(
-                        arrayA[ndArrayA.realIndex(of: i)],
-                        arrayB[ndArrayB.realIndex(of: i)]
+                for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                    arrayZ[index.linearIndex] = f(
+                        arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)],
+                        arrayB[ndArrayB.arrayShape.linearIndex(of: index.rectangularIndex.value)]
                     )
                 }
             }
@@ -149,10 +156,10 @@ public func elementwiseInParallel<A, B, Z>(
                     group.enter()
 
                     DISPATCH.async { [arrayZ] in
-                        for i in range {
-                            arrayZ[i] = f(
-                                arrayA[ndArrayA.realIndex(of: i)],
-                                arrayB[ndArrayB.realIndex(of: i)]
+                        for index in indexSequence(range: range, shape: ndArrayA.shape) {
+                            arrayZ[index.linearIndex] = f(
+                                arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)],
+                                arrayB[ndArrayB.arrayShape.linearIndex(of: index.rectangularIndex.value)]
                             )
                         }
                         group.leave()

@@ -1,6 +1,6 @@
 import NDArray
 
-let s = indexSequence(range: 0 ..< 1010, shape: [10, 2, 5])
+let s = indexSequence(range: 3 ..< 10, shape: [10, 2, 5])
 
 for x in s {
     print(x.rectangularIndex)

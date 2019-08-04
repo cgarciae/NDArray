@@ -64,7 +64,7 @@
     }
 
     @inlinable
-    public subscript(_ indexes: [Int]) -> Int {
+    public func linearIndex(of indexes: [Int]) -> Int {
         let nonSequeezedValue = zip(indexes, nonSequeezedDimensions)
             .lazy
             .map { index, indexDimension in
