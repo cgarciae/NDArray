@@ -1,15 +1,15 @@
 
 extension NDArray: CustomStringConvertible {
     public var description: String {
-        let nElements = shape.reduce(1, *)
+        let nElements = shape.product()
         var s = "\(Self.self)\(shape)(" + String(repeating: "[", count: max(shape.count - 1, 0))
 
         if shape.count == 0 {
-            return s + "\(dataValue(at: 0))" + ")"
+            return s + "\(dataValue(at: []))" + ")"
         } else if shape.count == 1 {
             var arrayString = ""
-            for i in 0 ..< nElements {
-                arrayString += "\(dataValue(at: i))" + (i + 1 != nElements ? ", " : "")
+            for index in indexSequence(range: 0 ..< nElements, shape: shape) {
+                arrayString += "\(dataValue(at: index.rectangularIndex.value))" + (index.linearIndex + 1 != nElements ? ", " : "")
             }
             return s + "[\(arrayString)])"
         } else {
@@ -21,7 +21,9 @@ extension NDArray: CustomStringConvertible {
 
             var arrayString = ""
 
-            for i in 0 ... nElements {
+            for index in indexSequence(range: 0 ..< nElements + 1, shape: shape) {
+                let i = index.linearIndex
+
                 if i % lastDim == 0, i > 0 {
                     s += "    [\(arrayString)],\n"
                     arrayString = ""
@@ -32,7 +34,7 @@ extension NDArray: CustomStringConvertible {
                 }
 
                 if i < nElements {
-                    arrayString += "\(dataValue(at: i))" + ((i + 1) % lastDim != 0 ? ", " : "")
+                    arrayString += "\(dataValue(at: index.rectangularIndex.value))" + ((i + 1) % lastDim != 0 ? ", " : "")
                 }
             }
             return s + String(repeating: "]", count: max(shape.count - 1, 1)) + ")"

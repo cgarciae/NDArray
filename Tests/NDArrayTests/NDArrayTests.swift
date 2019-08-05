@@ -197,11 +197,11 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[1, 1]
 
-        let realIndex = b.realIndex(of: 0)
+        let linearIndex = b.linearIndex(at: [])
 
         XCTAssertEqual(b.shape, [])
-        XCTAssertEqual(realIndex, 3)
-        XCTAssertEqual(b.data.value[realIndex], 20)
+        XCTAssertEqual(linearIndex, 3)
+        XCTAssertEqual(b.data.value[linearIndex], 20)
     }
 
     func testScalarElementWiseAdd() {
@@ -313,6 +313,8 @@ final class NDArrayTests: XCTestCase {
             [1, 2, 3],
             [4, 5, 6],
         ]).transposed([1, 0]).copy()
+
+        print(a)
 
         XCTAssertEqual(a.data.value, [1, 4, 2, 5, 3, 6])
     }

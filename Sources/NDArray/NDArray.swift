@@ -12,9 +12,9 @@ public final class Ref<A>: CustomStringConvertible {
 
 public struct NDArray<Scalar> {
     @usableFromInline internal var data: Ref<[Scalar]>
-
-    @inlinable public var shape: [Int] { arrayShape.virtualShape }
     @usableFromInline internal var arrayShape: ArrayShape
+
+    public var shape: [Int] { arrayShape.dimensionLengths }
 
     @usableFromInline
     internal init(_ data: Ref<[Scalar]>, shape: ArrayShape) {
@@ -26,13 +26,13 @@ public struct NDArray<Scalar> {
         let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
 
         precondition(
-            calculatedShape.reduce(1, *) == flatData.count,
+            calculatedShape.product() == flatData.count,
             "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
         )
 
         if let shape = shape {
             precondition(
-                shape.reduce(1, *) == flatData.count,
+                shape.product() == flatData.count,
                 "Invalid shape, number of elements"
             )
         }
@@ -48,18 +48,18 @@ public struct NDArray<Scalar> {
     }
 
     public init(_ data: Scalar) {
-        arrayShape = ArrayShape([DimensionProtocol]())
+        arrayShape = ArrayShape([DimensionProtocol](), linearMemoryOffset: 0)
         self.data = Ref([data])
     }
 
     @inlinable
-    public func realIndex(of index: Int) -> Int {
-        arrayShape.realIndex(of: index)
+    public func linearIndex(at indexes: [Int]) -> Int {
+        arrayShape.linearIndex(of: indexes)
     }
 
     @inlinable
-    public func dataValue(at index: Int) -> Scalar {
-        let realIndex = arrayShape.realIndex(of: index)
-        return data.value[realIndex]
+    public func dataValue(at indexes: [Int]) -> Scalar {
+        let linearIndex = arrayShape.linearIndex(of: indexes)
+        return data.value[linearIndex]
     }
 }

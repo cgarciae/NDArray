@@ -138,3 +138,15 @@ extension Sequence {
         }
     }
 }
+
+extension Sequence where Element: Numeric {
+    @inlinable
+    public func sum() -> Element {
+        reduce(0, +)
+    }
+
+    @inlinable
+    public func product() -> Element {
+        reduce(1, *)
+    }
+}

@@ -13,7 +13,7 @@ public func elementwise<A, Z>(
     _ ndArrayA: NDArray<A>,
     apply f: (A) -> Z
 ) -> NDArray<Z> {
-    let nElements = ndArrayA.shape.reduce(1, *)
+    let nElements = ndArrayA.shape.product()
 
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
@@ -21,7 +21,7 @@ public func elementwise<A, Z>(
         ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
             // for i in 0 ..< nElements {
             //     arrayZ[i] = f(
-            //         arrayA[ndArrayA.realIndex(of: i)]
+            //         arrayA[ndArrayA.linearIndex(of: i)]
             //     )
             // }
             for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
@@ -44,7 +44,7 @@ public func elementwiseInParallel<A, Z>(
     workers: Int = CPU_COUNT,
     apply f: @escaping (A) -> Z
 ) -> NDArray<Z> {
-    let nElements = ndArrayA.shape.reduce(1, *)
+    let nElements = ndArrayA.shape.product()
 
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
@@ -94,7 +94,7 @@ public func elementwise<A, B, Z>(
         (ndArrayA, ndArrayB) = broadcast(ndArrayA, and: ndArrayB)
     }
 
-    let nElements = ndArrayA.shape.reduce(1, *)
+    let nElements = ndArrayA.shape.product()
 
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
@@ -143,7 +143,7 @@ public func elementwiseInParallel<A, B, Z>(
     apply f: @escaping (A, B) -> Z
 ) -> NDArray<Z> {
     precondition(ndArrayA.shape == ndArrayB.shape)
-    let nElements = ndArrayA.shape.reduce(1, *)
+    let nElements = ndArrayA.shape.product()
 
     let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
         count = nElements
