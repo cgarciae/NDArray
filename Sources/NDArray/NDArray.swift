@@ -59,7 +59,8 @@ public struct NDArray<Scalar> {
 
     @inlinable
     public func dataValue(at indexes: [Int]) -> Scalar {
-        let linearIndex = arrayShape.linearIndex(of: indexes)
-        return data.value[linearIndex]
+        return data.value[
+            arrayShape.linearIndex(of: indexes)
+        ]
     }
 }
