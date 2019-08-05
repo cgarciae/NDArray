@@ -11,31 +11,74 @@ public let CPU_COUNT = ProcessInfo.processInfo.activeProcessorCount
 @inlinable
 public func elementwise<A, Z>(
     _ ndArrayA: NDArray<A>,
+    into ndArrayZ: inout NDArray<Z>,
+    apply f: (A) -> Z
+) {
+    let nElements = ndArrayA.shape.product()
+
+    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
+        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
+            for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
+                let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+
+                arrayZ[zIndex] = f(arrayA[aIndex])
+            }
+        }
+    }
+}
+
+@inlinable
+public func elementwise<A, Z>(
+    _ ndArrayA: NDArray<A>,
     apply f: (A) -> Z
 ) -> NDArray<Z> {
     let nElements = ndArrayA.shape.product()
 
-    let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
-        count = nElements
-
-        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            // for i in 0 ..< nElements {
-            //     arrayZ[i] = f(
-            //         arrayA[ndArrayA.linearIndex(of: i)]
-            //     )
-            // }
-            for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                arrayZ[index.linearIndex] = f(
-                    arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)]
-                )
-            }
-        }
-    }
-
-    return NDArray(
-        arrayZ,
+    var ndArrayZ = NDArray<Z>(
+        [Z](unsafeUninitializedCapacity: nElements) { x, count in
+            count = nElements
+        },
         shape: ndArrayA.shape
     )
+
+    elementwise(ndArrayA, into: &ndArrayZ, apply: f)
+
+    return ndArrayZ
+}
+
+@inlinable
+public func elementwiseInParallel<A, Z>(
+    _ ndArrayA: NDArray<A>,
+    into ndArrayZ: inout NDArray<Z>,
+    workers: Int = CPU_COUNT,
+    apply f: @escaping (A) -> Z
+) {
+    let nElements = ndArrayA.shape.product()
+
+    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
+        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
+            let group = DispatchGroup()
+
+            for range in splitRanges(total: nElements, splits: workers) {
+                group.enter()
+
+                DISPATCH.async { [arrayZ, ndArrayZ] in
+
+                    for (_, rectangularIndex) in indexSequence(range: range, shape: ndArrayA.shape) {
+                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
+                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+
+                        arrayZ[zIndex] = f(arrayA[aIndex])
+                    }
+
+                    group.leave()
+                }
+            }
+
+            group.wait()
+        }
+    }
 }
 
 @inlinable
@@ -46,40 +89,52 @@ public func elementwiseInParallel<A, Z>(
 ) -> NDArray<Z> {
     let nElements = ndArrayA.shape.product()
 
-    let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
-        count = nElements
-
-        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            let group = DispatchGroup()
-
-            for range in splitRanges(total: nElements, splits: workers) {
-                group.enter()
-
-                DISPATCH.async { [arrayZ] in
-
-                    for index in indexSequence(range: range, shape: ndArrayA.shape) {
-                        arrayZ[index.linearIndex] = f(
-                            arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)]
-                        )
-                    }
-
-                    group.leave()
-                }
-            }
-
-            group.wait()
-        }
-    }
-
-    return NDArray(
-        arrayZ,
+    var ndArrayZ = NDArray<Z>(
+        [Z](unsafeUninitializedCapacity: nElements) { x, count in
+            count = nElements
+        },
         shape: ndArrayA.shape
     )
+
+    elementwiseInParallel(ndArrayA, into: &ndArrayZ, workers: workers, apply: f)
+
+    return ndArrayZ
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // 2
 //////////////////////////////////////////////////////////////////////////////////////////
+
+@inlinable
+public func elementwise<A, B, Z>(
+    _ ndArrayA: NDArray<A>,
+    _ ndArrayB: NDArray<B>,
+    into ndArrayZ: inout NDArray<Z>,
+    apply f: (A, B) -> Z
+) {
+    var ndArrayA = ndArrayA
+    var ndArrayB = ndArrayB
+
+    if ndArrayA.shape != ndArrayB.shape {
+        (ndArrayA, ndArrayB) = broadcast(ndArrayA, and: ndArrayB)
+    }
+
+    let nElements = ndArrayA.shape.product()
+
+    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
+        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
+            ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
+                for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
+                    let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
+                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+
+                    arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
+                }
+            }
+        }
+    }
+}
 
 @inlinable
 public func elementwise<A, B, Z>(
@@ -96,25 +151,16 @@ public func elementwise<A, B, Z>(
 
     let nElements = ndArrayA.shape.product()
 
-    let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
-        count = nElements
-
-        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
-                for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                    arrayZ[index.linearIndex] = f(
-                        arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)],
-                        arrayB[ndArrayB.arrayShape.linearIndex(of: index.rectangularIndex.value)]
-                    )
-                }
-            }
-        }
-    }
-
-    return NDArray(
-        arrayZ,
+    var ndArrayZ = NDArray<Z>(
+        [Z](unsafeUninitializedCapacity: nElements) { x, count in
+            count = nElements
+        },
         shape: ndArrayA.shape
     )
+
+    elementwise(ndArrayA, ndArrayB, into: &ndArrayZ, apply: f)
+
+    return ndArrayZ
 }
 
 @inlinable
@@ -128,6 +174,16 @@ public func elementwise<A, B, Z>(
 
 @inlinable
 public func elementwise<A, B, Z>(
+    _ ndArrayA: NDArray<A>,
+    _ b: B,
+    into ndArrayZ: inout NDArray<Z>,
+    apply f: (A, B) -> Z
+) {
+    elementwise(ndArrayA, into: &ndArrayZ) { a in f(a, b) }
+}
+
+@inlinable
+public func elementwise<A, B, Z>(
     _ a: A,
     _ ndArrayB: NDArray<B>,
     apply f: (A, B) -> Z
@@ -136,18 +192,27 @@ public func elementwise<A, B, Z>(
 }
 
 @inlinable
+public func elementwise<A, B, Z>(
+    _ a: A,
+    _ ndArrayB: NDArray<B>,
+    into ndArrayZ: inout NDArray<Z>,
+    apply f: (A, B) -> Z
+) {
+    elementwise(ndArrayB, into: &ndArrayZ) { b in f(a, b) }
+}
+
+@inlinable
 public func elementwiseInParallel<A, B, Z>(
     _ ndArrayA: NDArray<A>,
     _ ndArrayB: NDArray<B>,
+    into ndArrayZ: inout NDArray<Z>,
     workers: Int = CPU_COUNT,
     apply f: @escaping (A, B) -> Z
-) -> NDArray<Z> {
+) {
     precondition(ndArrayA.shape == ndArrayB.shape)
     let nElements = ndArrayA.shape.product()
 
-    let arrayZ = [Z](unsafeUninitializedCapacity: nElements) { arrayZ, count in
-        count = nElements
-
+    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
         ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
             ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
                 let group = DispatchGroup()
@@ -155,12 +220,13 @@ public func elementwiseInParallel<A, B, Z>(
                 for range in splitRanges(total: nElements, splits: workers) {
                     group.enter()
 
-                    DISPATCH.async { [arrayZ] in
-                        for index in indexSequence(range: range, shape: ndArrayA.shape) {
-                            arrayZ[index.linearIndex] = f(
-                                arrayA[ndArrayA.arrayShape.linearIndex(of: index.rectangularIndex.value)],
-                                arrayB[ndArrayB.arrayShape.linearIndex(of: index.rectangularIndex.value)]
-                            )
+                    DISPATCH.async { [ndArrayZ, arrayZ] in
+                        for (_, rectangularIndex) in indexSequence(range: range, shape: ndArrayA.shape) {
+                            let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
+                            let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
+                            let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+
+                            arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
                         }
                         group.leave()
                     }
@@ -170,11 +236,34 @@ public func elementwiseInParallel<A, B, Z>(
             }
         }
     }
+}
 
-    return NDArray(
-        arrayZ,
+@inlinable
+public func elementwiseInParallel<A, B, Z>(
+    _ ndArrayA: NDArray<A>,
+    _ ndArrayB: NDArray<B>,
+    workers: Int = CPU_COUNT,
+    apply f: @escaping (A, B) -> Z
+) -> NDArray<Z> {
+    var ndArrayA = ndArrayA
+    var ndArrayB = ndArrayB
+
+    if ndArrayA.shape != ndArrayB.shape {
+        (ndArrayA, ndArrayB) = broadcast(ndArrayA, and: ndArrayB)
+    }
+
+    let nElements = ndArrayA.shape.product()
+
+    var ndArrayZ = NDArray<Z>(
+        [Z](unsafeUninitializedCapacity: nElements) { x, count in
+            count = nElements
+        },
         shape: ndArrayA.shape
     )
+
+    elementwiseInParallel(ndArrayA, ndArrayB, into: &ndArrayZ, workers: workers, apply: f)
+
+    return ndArrayZ
 }
 
 @inlinable
@@ -189,10 +278,32 @@ public func elementwiseInParallel<A, B, Z>(
 
 @inlinable
 public func elementwiseInParallel<A, B, Z>(
+    _ ndArrayA: NDArray<A>,
+    _ b: B,
+    into ndArrayZ: inout NDArray<Z>,
+    workers: Int = CPU_COUNT,
+    apply f: @escaping (A, B) -> Z
+) {
+    elementwiseInParallel(ndArrayA, into: &ndArrayZ, workers: workers) { a in f(a, b) }
+}
+
+@inlinable
+public func elementwiseInParallel<A, B, Z>(
     _ a: A,
     _ ndArrayB: NDArray<B>,
     workers: Int = CPU_COUNT,
     apply f: @escaping (A, B) -> Z
 ) -> NDArray<Z> {
     elementwiseInParallel(ndArrayB, workers: workers) { b in f(a, b) }
+}
+
+@inlinable
+public func elementwiseInParallel<A, B, Z>(
+    _ a: A,
+    _ ndArrayB: NDArray<B>,
+    into ndArrayZ: inout NDArray<Z>,
+    workers: Int = CPU_COUNT,
+    apply f: @escaping (A, B) -> Z
+) {
+    elementwiseInParallel(ndArrayB, into: &ndArrayZ, workers: workers) { b in f(a, b) }
 }
