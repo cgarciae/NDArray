@@ -124,12 +124,22 @@ public func elementwise<A, B, Z>(
     ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
         ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
             ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
-                for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
-                    let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
-                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+                let allOriginalShape = ndArrayA.arrayShape.isOriginalShape &&
+                    ndArrayB.arrayShape.isOriginalShape &&
+                    ndArrayZ.arrayShape.isOriginalShape
 
-                    arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
+                if allOriginalShape {
+                    for i in 0 ..< nElements {
+                        arrayZ[i] = f(arrayA[i], arrayB[i])
+                    }
+                } else {
+                    for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
+                        let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
+                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+
+                        arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
+                    }
                 }
             }
         }

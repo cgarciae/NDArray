@@ -28,7 +28,7 @@ extension DimensionProtocol {
     }
 }
 
-public struct Dimension: DimensionProtocol, UnmodifiedDimension {
+public class Dimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int
     public let memory_layout: MemoryLayout
 
@@ -41,7 +41,7 @@ public struct Dimension: DimensionProtocol, UnmodifiedDimension {
     public func linearIndex(of index: Int) -> Int { index }
 }
 
-public struct SingularDimension: DimensionProtocol, UnmodifiedDimension {
+public class SingularDimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int = 1
     public let memory_layout: MemoryLayout
 
@@ -53,7 +53,7 @@ public struct SingularDimension: DimensionProtocol, UnmodifiedDimension {
     public func linearIndex(of index: Int) -> Int { 0 }
 }
 
-public struct SlicedDimension: DimensionProtocol {
+public class SlicedDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public let length: Int
 
@@ -84,7 +84,7 @@ public struct SlicedDimension: DimensionProtocol {
     }
 }
 
-public struct InvertedDimension: DimensionProtocol {
+public class InvertedDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public let length: Int
 
@@ -103,7 +103,7 @@ public struct InvertedDimension: DimensionProtocol {
     }
 }
 
-public struct TiledDimension: DimensionProtocol {
+public class TiledDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public var length: Int
     public var repetitions: Int

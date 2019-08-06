@@ -150,3 +150,15 @@ extension Sequence where Element: Numeric {
         reduce(1, *)
     }
 }
+
+extension Sequence where Element == Bool {
+    @inlinable
+    public func all() -> Element {
+        reduce(true) { $0 && $1 }
+    }
+
+    @inlinable
+    public func product() -> Element {
+        reduce(false) { $0 || $1 }
+    }
+}

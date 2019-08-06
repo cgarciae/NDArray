@@ -5,6 +5,10 @@
     @usableFromInline let linearMemoryOffset: Int
     @usableFromInline let dimensionLengths: [Int]
     @usableFromInline let dimensionStrides: [Int]
+    @usableFromInline var isOriginalShape: Bool {
+        linearMemoryOffset == 0 &&
+            dimensions.lazy.map { $0 is UnmodifiedDimension }.all()
+    }
 
     @usableFromInline init(_ shape: [Int]) {
         let dimensionStrides = getDimensionStrides(of: shape)
