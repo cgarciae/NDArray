@@ -1,3 +1,4 @@
+import Foundation
 
 public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linearIndex: Int, rectangularIndex: Ref<[Int]>)> {
     AnySequence { () -> AnyIterator<(linearIndex: Int, rectangularIndex: Ref<[Int]>)> in
@@ -110,6 +111,39 @@ public func splitRanges(total: Int, splits: Int) -> [Range<Int>] {
 @inlinable
 public func getDimensionStrides(of shape: [Int]) -> [Int] {
     shape.reversed().scan(*).reversed().dropFirst() + [1]
+}
+
+@inlinable
+public func parFor<S: Sequence, E>(
+    _ range: Range<Int>,
+    workers: Int = CPU_COUNT,
+    rangeMap: @escaping (Range<Int>) -> S,
+    body: @escaping (E) -> Void
+) where S.Element == E {
+    let group = DispatchGroup()
+    let nElements = range.count
+
+    for range in splitRanges(total: nElements, splits: workers) {
+        group.enter()
+
+        DISPATCH.async {
+            for element in rangeMap(range) {
+                body(element)
+            }
+            group.leave()
+        }
+    }
+
+    group.wait()
+}
+
+@inlinable
+public func parFor(
+    _ range: Range<Int>,
+    workers: Int = CPU_COUNT,
+    body: @escaping (Int) -> Void
+) {
+    parFor(range, workers: workers, rangeMap: { x -> Range<Int> in x }, body: body)
 }
 
 extension Sequence {

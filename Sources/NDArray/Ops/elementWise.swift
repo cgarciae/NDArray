@@ -58,25 +58,14 @@ public func elementwiseInParallel<A, Z>(
 
     ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
         ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            let group = DispatchGroup()
+            let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
 
-            for range in splitRanges(total: nElements, splits: workers) {
-                group.enter()
+            parFor(0 ..< nElements, rangeMap: rangeMap) { [ndArrayZ, arrayZ] _, rectangularIndex in
+                let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
+                let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
 
-                DISPATCH.async { [arrayZ, ndArrayZ] in
-
-                    for (_, rectangularIndex) in indexSequence(range: range, shape: ndArrayA.shape) {
-                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
-                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
-
-                        arrayZ[zIndex] = f(arrayA[aIndex])
-                    }
-
-                    group.leave()
-                }
+                arrayZ[zIndex] = f(arrayA[aIndex])
             }
-
-            group.wait()
         }
     }
 }
@@ -225,24 +214,15 @@ public func elementwiseInParallel<A, B, Z>(
     ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
         ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
             ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
-                let group = DispatchGroup()
+                let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
 
-                for range in splitRanges(total: nElements, splits: workers) {
-                    group.enter()
+                parFor(0 ..< nElements, rangeMap: rangeMap) { [ndArrayZ, arrayZ] _, rectangularIndex in
+                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
+                    let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
+                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
 
-                    DISPATCH.async { [ndArrayZ, arrayZ] in
-                        for (_, rectangularIndex) in indexSequence(range: range, shape: ndArrayA.shape) {
-                            let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
-                            let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
-                            let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
-
-                            arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
-                        }
-                        group.leave()
-                    }
+                    arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
                 }
-
-                group.wait()
             }
         }
     }
