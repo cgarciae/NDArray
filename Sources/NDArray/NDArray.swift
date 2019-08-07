@@ -53,14 +53,32 @@ public struct NDArray<Scalar> {
     }
 
     @inlinable
-    public func linearIndex(at indexes: [Int]) -> Int {
+    public func linearIndex(at indexes: UnsafeMutableBufferPointer<Int>) -> Int {
         arrayShape.linearIndex(of: indexes)
     }
 
     @inlinable
-    public func dataValue(at indexes: [Int]) -> Scalar {
+    public func linearIndex(at indexes: [Int]) -> Int {
+        var indexes = indexes
+
+        return indexes.withUnsafeMutableBufferPointer { indexes in
+            linearIndex(at: indexes)
+        }
+    }
+
+    @inlinable
+    public func dataValue(at indexes: UnsafeMutableBufferPointer<Int>) -> Scalar {
         return data.value[
             arrayShape.linearIndex(of: indexes)
         ]
+    }
+
+    @inlinable
+    public func dataValue(at indexes: [Int]) -> Scalar {
+        var indexes = indexes
+
+        return indexes.withUnsafeMutableBufferPointer { indexes in
+            dataValue(at: indexes)
+        }
     }
 }

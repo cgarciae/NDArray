@@ -36,7 +36,7 @@
     }
 
     @inlinable
-    public func linearIndex(of indexes: [Int]) -> Int {
+    public func linearIndex(of indexes: UnsafeMutableBufferPointer<Int>) -> Int {
         let partialIndex = zip(indexes, dimensions)
             .lazy
             .map { index, dimension in

@@ -94,8 +94,8 @@ extension NDArray {
             viewNDArray.data.value.withUnsafeMutableBufferPointer { view in
                 valuesNDArray.data.value.withUnsafeBufferPointer { values in
                     for index in indexSequence(range: 0 ..< nElements, shape: viewNDArray.shape) {
-                        let viewIndex = viewNDArray.linearIndex(at: index.rectangularIndex.value)
-                        let valuesIndex = valuesNDArray.linearIndex(at: index.rectangularIndex.value)
+                        let viewIndex = viewNDArray.linearIndex(at: index.rectangularIndex)
+                        let valuesIndex = valuesNDArray.linearIndex(at: index.rectangularIndex)
 
                         view[viewIndex] = values[valuesIndex]
                     }

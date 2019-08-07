@@ -314,8 +314,6 @@ final class NDArrayTests: XCTestCase {
             [4, 5, 6],
         ]).transposed([1, 0]).copy()
 
-        print(a)
-
         XCTAssertEqual(a.data.value, [1, 4, 2, 5, 3, 6])
     }
 

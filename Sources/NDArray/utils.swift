@@ -1,30 +1,39 @@
 import Foundation
 
-public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linearIndex: Int, rectangularIndex: Ref<[Int]>)> {
-    AnySequence { () -> AnyIterator<(linearIndex: Int, rectangularIndex: Ref<[Int]>)> in
+public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linearIndex: Int, rectangularIndex: UnsafeMutableBufferPointer<Int>)> {
+    AnySequence { () -> AnyIterator<(linearIndex: Int, rectangularIndex: UnsafeMutableBufferPointer<Int>)> in
+        let arrayShape = shape
 
         var iterator = range.makeIterator()
-        let dimensionStrides = getDimensionStrides(of: shape)
-        let rectangularIndex = Ref(Array(repeating: 0, count: shape.count))
-        var first = true
+        let dimensionStrides = getDimensionStrides(of: arrayShape)
 
-        return AnyIterator { () -> (linearIndex: Int, rectangularIndex: Ref<[Int]>)? in
-            guard let current = iterator.next() else { return nil }
+        let rectangularIndex = UnsafeMutableBufferPointer<Int>.allocate(capacity: arrayShape.count)
+        rectangularIndex.initialize(repeating: 0)
+        let shape = UnsafeMutableBufferPointer<Int>.allocate(capacity: arrayShape.count)
+        _ = shape.initialize(from: arrayShape)
+
+        var first = true
+        return AnyIterator { () -> (linearIndex: Int, rectangularIndex: UnsafeMutableBufferPointer<Int>)? in
+            guard let current = iterator.next() else {
+                shape.baseAddress!.deinitialize(count: shape.count)
+                shape.deallocate()
+
+                rectangularIndex.baseAddress!.deinitialize(count: rectangularIndex.count)
+                rectangularIndex.deallocate()
+
+                return nil
+            }
 
             if first {
                 first = false
                 var remainder = current
 
-                rectangularIndex.value.withUnsafeMutableBufferPointer { rectangularIndex in
-                    shape.withUnsafeBufferPointer { shape in
-                        for i in 0 ..< shape.count {
-                            if shape[i] > 1 {
-                                let index: Int
-                                (index, remainder) = remainder.quotientAndRemainder(dividingBy: dimensionStrides[i])
+                for i in 0 ..< shape.count {
+                    if shape[i] > 1 {
+                        let index: Int
+                        (index, remainder) = remainder.quotientAndRemainder(dividingBy: dimensionStrides[i])
 
-                                rectangularIndex[i] = index
-                            }
-                        }
+                        rectangularIndex[i] = index
                     }
                 }
 
@@ -36,18 +45,14 @@ public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linea
 
             var pos = shape.count - 1
 
-            rectangularIndex.value.withUnsafeMutableBufferPointer { rectangularIndex in
-                shape.withUnsafeBufferPointer { shape in
-                    while pos >= 0 {
-                        let nextValue = rectangularIndex[pos] + 1
-                        if nextValue % shape[pos] == 0 {
-                            rectangularIndex[pos] = 0
-                            pos -= 1
-                        } else {
-                            rectangularIndex[pos] = nextValue
-                            break
-                        }
-                    }
+            while pos >= 0 {
+                let nextValue = rectangularIndex[pos] + 1
+                if nextValue % shape[pos] == 0 {
+                    rectangularIndex[pos] = 0
+                    pos -= 1
+                } else {
+                    rectangularIndex[pos] = nextValue
+                    break
                 }
             }
 

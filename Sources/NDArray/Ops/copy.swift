@@ -8,7 +8,7 @@ extension NDArray {
 
             self.data.value.withUnsafeBufferPointer { arrayA in
                 for index in indexSequence(range: 0 ..< nElements, shape: shape) {
-                    arrayC[index.linearIndex] = arrayA[self.linearIndex(at: index.rectangularIndex.value)]
+                    arrayC[index.linearIndex] = arrayA[self.linearIndex(at: index.rectangularIndex)]
                 }
             }
         }

@@ -5,11 +5,11 @@ extension NDArray: CustomStringConvertible {
         var s = "\(Self.self)\(shape)(" + String(repeating: "[", count: max(shape.count - 1, 0))
 
         if shape.count == 0 {
-            return s + "\(dataValue(at: []))" + ")"
+            return s + "\(dataValue(at: [Int]()))" + ")"
         } else if shape.count == 1 {
             var arrayString = ""
             for (i, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: shape) {
-                arrayString += "\(dataValue(at: rectangularIndex.value))" + (i + 1 != nElements ? ", " : "")
+                arrayString += "\(dataValue(at: rectangularIndex))" + (i + 1 != nElements ? ", " : "")
             }
             return s + "[\(arrayString)])"
         } else {
@@ -32,7 +32,7 @@ extension NDArray: CustomStringConvertible {
                 }
 
                 if i < nElements {
-                    arrayString += "\(dataValue(at: rectangularIndex.value))" + ((i + 1) % lastDim != 0 ? ", " : "")
+                    arrayString += "\(dataValue(at: rectangularIndex))" + ((i + 1) % lastDim != 0 ? ", " : "")
                 }
             }
             return s + String(repeating: "]", count: max(shape.count - 1, 1)) + ")"

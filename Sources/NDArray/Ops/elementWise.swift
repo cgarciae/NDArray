@@ -27,8 +27,8 @@ public func elementwise<A, Z>(
                 }
             } else {
                 for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
-                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
+                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
 
                     arrayZ[zIndex] = f(arrayA[aIndex])
                 }
@@ -78,8 +78,8 @@ public func elementwiseInParallel<A, Z>(
                 let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
 
                 parFor(0 ..< nElements, rangeMap: rangeMap) { [ndArrayZ, arrayZ] _, rectangularIndex in
-                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
-                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
+                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
 
                     arrayZ[zIndex] = f(arrayA[aIndex])
                 }
@@ -141,9 +141,9 @@ public func elementwise<A, B, Z>(
                     }
                 } else {
                     for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
-                        let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
-                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
+                        let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex)
+                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
 
                         arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
                     }
@@ -244,9 +244,9 @@ public func elementwiseInParallel<A, B, Z>(
                     let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
 
                     parFor(0 ..< nElements, rangeMap: rangeMap) { [ndArrayZ, arrayZ] _, rectangularIndex in
-                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex.value)
-                        let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex.value)
-                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex.value)
+                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
+                        let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex)
+                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
 
                         arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
                     }
