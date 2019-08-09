@@ -13,15 +13,7 @@ You can install it via SwiftPM via:
 ```swift
 .package(url: "https://github.com/cgarciae/NDArray", from: "0.0.6")
 ```
-It might work on other compatible package managers. This package is only tested in Swift 5.1, compatibility with previous version is not guaranteed.  Although specified in the `Package.swift` file you might also need to run these commands to setup your environment.
-
-#### Ubuntu
-```bash
-sudo apt-get install gfortran liblapack3 liblapacke liblapacke-dev libopenblas-base libopenblas-dev
-```
-#### OSX
-```bash
-brew install homebrew/dupes/lapack homebrew/science/openblas
+It might work on other compatible package managers. This package is only tested in Swift 5.1, compatibility with previous version is not guaranteed.
 ```
 
 ## Example
