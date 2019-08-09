@@ -8,6 +8,11 @@ public let CPU_COUNT = ProcessInfo.processInfo.activeProcessorCount
 // 1
 //////////////////////////////////////////////////////////////////////////////////////////
 
+@inlinable public func getIndexer<Scalar>(_ ndarray: NDArray<Scalar>) -> ((Int, UnsafeMutableBufferPointer<Int>)) -> Int {
+    ndarray.arrayShape.isOriginalShape ?
+        { $0.0 } : { ndarray.arrayShape.linearIndex(of: $0.1) }
+}
+
 @inlinable
 public func elementwise<A, Z>(
     _ ndArrayA: NDArray<A>,
@@ -26,9 +31,15 @@ public func elementwise<A, Z>(
                     arrayZ[i] = f(arrayA[i])
                 }
             } else {
-                for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
-                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
+                let indexerA = getIndexer(ndArrayA)
+                let indexerZ = getIndexer(ndArrayZ)
+
+                // let indexerZ: ((Int, UnsafeMutableBufferPointer<Int>)) -> Int = ndArrayZ.arrayShape.isOriginalShape ?
+                //     { $0.0 } : { ndArrayZ.arrayShape.linearIndex(of: $0.1) }
+
+                for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                    let aIndex = indexerA(index)
+                    let zIndex = indexerZ(index)
 
                     arrayZ[zIndex] = f(arrayA[aIndex])
                 }
@@ -75,11 +86,13 @@ public func elementwiseInParallel<A, Z>(
                     arrayZ[i] = f(arrayA[i])
                 }
             } else {
+                let indexerA = getIndexer(ndArrayA)
+                let indexerZ = getIndexer(ndArrayZ)
                 let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
 
-                parFor(0 ..< nElements, rangeMap: rangeMap) { [ndArrayZ, arrayZ] _, rectangularIndex in
-                    let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
-                    let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
+                parFor(0 ..< nElements, rangeMap: rangeMap) { [arrayZ] index in
+                    let aIndex = indexerA(index)
+                    let zIndex = indexerZ(index)
 
                     arrayZ[zIndex] = f(arrayA[aIndex])
                 }
@@ -140,10 +153,14 @@ public func elementwise<A, B, Z>(
                         arrayZ[i] = f(arrayA[i], arrayB[i])
                     }
                 } else {
-                    for (_, rectangularIndex) in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
-                        let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex)
-                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
+                    let indexerA = getIndexer(ndArrayA)
+                    let indexerB = getIndexer(ndArrayB)
+                    let indexerZ = getIndexer(ndArrayZ)
+
+                    for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                        let aIndex = indexerA(index)
+                        let bIndex = indexerB(index)
+                        let zIndex = indexerZ(index)
 
                         arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
                     }
@@ -242,11 +259,14 @@ public func elementwiseInParallel<A, B, Z>(
                     }
                 } else {
                     let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
+                    let indexerA = getIndexer(ndArrayA)
+                    let indexerB = getIndexer(ndArrayB)
+                    let indexerZ = getIndexer(ndArrayZ)
 
-                    parFor(0 ..< nElements, rangeMap: rangeMap) { [ndArrayZ, arrayZ] _, rectangularIndex in
-                        let aIndex = ndArrayA.arrayShape.linearIndex(of: rectangularIndex)
-                        let bIndex = ndArrayB.arrayShape.linearIndex(of: rectangularIndex)
-                        let zIndex = ndArrayZ.arrayShape.linearIndex(of: rectangularIndex)
+                    parFor(0 ..< nElements, rangeMap: rangeMap) { [arrayZ] index in
+                        let aIndex = indexerA(index)
+                        let bIndex = indexerB(index)
+                        let zIndex = indexerZ(index)
 
                         arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
                     }

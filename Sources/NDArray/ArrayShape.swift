@@ -5,10 +5,7 @@
     @usableFromInline let linearMemoryOffset: Int
     @usableFromInline let dimensionLengths: [Int]
     @usableFromInline let dimensionStrides: [Int]
-    @usableFromInline var isOriginalShape: Bool {
-        linearMemoryOffset == 0 &&
-            dimensions.lazy.map { $0 is UnmodifiedDimension }.all()
-    }
+    @usableFromInline let isOriginalShape: Bool
 
     @usableFromInline init(_ shape: [Int]) {
         let dimensionStrides = getDimensionStrides(of: shape)
@@ -26,6 +23,8 @@
                     return Dimension(length: shape[i], memory_stride: dimensionStrides[i])
                 }
             }
+
+        isOriginalShape = true
     }
 
     @usableFromInline init(_ dimensions: [DimensionProtocol], linearMemoryOffset: Int) {
@@ -33,6 +32,8 @@
         self.linearMemoryOffset = linearMemoryOffset
         dimensionLengths = dimensions.map { $0.length }
         dimensionStrides = getDimensionStrides(of: dimensionLengths)
+        isOriginalShape = linearMemoryOffset == 0 &&
+            dimensions.lazy.map { $0 is UnmodifiedDimension }.all()
     }
 
     @inlinable
