@@ -4,28 +4,34 @@ internal func broadcast(_ left: ArrayShape, and right: ArrayShape) -> (left: Arr
     var left = left
     var right = right
 
-    if left.virtualShape.count == 0 {
-        left = ArrayShape(Array(repeating: SingularDimension(), count: right.virtualShape.count))
-    } else if right.virtualShape.count == 0 {
-        right = ArrayShape(Array(repeating: SingularDimension(), count: left.virtualShape.count))
+    if left.dimensions.count == 0 {
+        left = ArrayShape(
+            Array(repeating: SingularDimension(), count: right.dimensions.count),
+            linearMemoryOffset: left.linearMemoryOffset
+        )
+    } else if right.dimensions.count == 0 {
+        right = ArrayShape(
+            Array(repeating: SingularDimension(), count: left.dimensions.count),
+            linearMemoryOffset: right.linearMemoryOffset
+        )
     }
 
     var leftDimensions = left.dimensions
     var rightDimensions = right.dimensions
 
-    for (leftIndexDimension, rightIndexDimension) in zip(left.nonSequeezedDimensions, right.nonSequeezedDimensions) {
-        if leftIndexDimension.dimension.length == rightIndexDimension.dimension.length {
+    for i in 0 ..< leftDimensions.count {
+        if leftDimensions[i].length == rightDimensions[i].length {
             continue
-        } else if leftIndexDimension.dimension.length == 1 {
-            leftDimensions[leftIndexDimension.index] = leftIndexDimension.dimension.tiled(rightIndexDimension.dimension.length)
+        } else if leftDimensions[i].length == 1 {
+            leftDimensions[i] = leftDimensions[i].tiled(rightDimensions[i].length)
         } else {
-            rightDimensions[rightIndexDimension.index] = rightIndexDimension.dimension.tiled(leftIndexDimension.dimension.length)
+            rightDimensions[i] = rightDimensions[i].tiled(leftDimensions[i].length)
         }
     }
 
     return (
-        left: ArrayShape(leftDimensions),
-        right: ArrayShape(rightDimensions)
+        left: ArrayShape(leftDimensions, linearMemoryOffset: left.linearMemoryOffset),
+        right: ArrayShape(rightDimensions, linearMemoryOffset: right.linearMemoryOffset)
     )
 }
 

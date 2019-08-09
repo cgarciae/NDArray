@@ -1,10 +1,15 @@
 import NDArray
 
-let s = indexSequence(range: 0 ..< 1010, shape: [10, 2, 5])
+let a = NDArray<Int>([
+    [1, 2, 3],
+    [4, 5, 6],
+]).transposed([1, 0]).copy()
 
-for x in s {
-    print(x.rectangularIndex)
-}
+// let s = indexSequence(range: 3 ..< 10, shape: [10, 2, 5])
+
+// for x in s {
+//     print(x.rectangularIndex)
+// }
 
 // print(NDArray<Int>(0))
 // print(NDArray<Int>([1, 2, 3, 4]))

@@ -7,15 +7,18 @@ extension NDArray {
             precondition(shape.count >= ranges.count)
 
             var dimensions = arrayShape.dimensions
+            var linearMemoryOffset = arrayShape.linearMemoryOffset
+            var dimensionToBeRemoved = [Int]()
 
-            for (rangeExpression, virtual) in zip(ranges, arrayShape.nonSequeezedDimensions) {
+            for (i, rangeExpression) in ranges.enumerated() {
                 switch rangeExpression.arrayRange {
                 case let .index(index):
-                    dimensions[virtual.index] = virtual.dimension.indexed(index)
+                    linearMemoryOffset += dimensions[i].strideValue(of: index)
+                    dimensionToBeRemoved.append(i)
 
                 case let .range(range, stride: stride):
 
-                    dimensions[virtual.index] = virtual.dimension.sliced(
+                    dimensions[i] = dimensions[i].sliced(
                         start: range.lowerBound,
                         end: range.upperBound,
                         stride: stride
@@ -23,14 +26,14 @@ extension NDArray {
 
                 case let .closedRange(range, stride: stride):
 
-                    dimensions[virtual.index] = virtual.dimension.sliced(
+                    dimensions[i] = dimensions[i].sliced(
                         start: range.lowerBound,
                         end: range.upperBound + 1,
                         stride: stride
                     )
 
                 case let .partialRangeUpTo(range, stride: stride):
-                    dimensions[virtual.index] = virtual.dimension.sliced(
+                    dimensions[i] = dimensions[i].sliced(
                         start: 0,
                         end: range.upperBound,
                         stride: stride
@@ -38,7 +41,7 @@ extension NDArray {
 
                 case let .partialRangeThrough(range, stride: stride):
 
-                    dimensions[virtual.index] = virtual.dimension.sliced(
+                    dimensions[i] = dimensions[i].sliced(
                         start: 0,
                         end: range.upperBound + 1,
                         stride: stride
@@ -46,14 +49,25 @@ extension NDArray {
 
                 case let .partialRangeFrom(range, stride: stride):
 
-                    dimensions[virtual.index] = virtual.dimension.sliced(
+                    dimensions[i] = dimensions[i].sliced(
                         start: range.lowerBound,
                         stride: stride
                     )
                 }
             }
 
-            return NDArray(data, shape: ArrayShape(dimensions))
+            dimensions = dimensions
+                .enumerated()
+                .filter { i, d in !dimensionToBeRemoved.contains(i) }
+                .map { i, d in d }
+
+            return NDArray(
+                data,
+                shape: ArrayShape(
+                    dimensions,
+                    linearMemoryOffset: linearMemoryOffset
+                )
+            )
         }
 
         mutating set(valuesNDArray) {
@@ -71,7 +85,7 @@ extension NDArray {
             }
 
             var viewNDArray = self[ranges]
-            let nElements = viewNDArray.shape.reduce(1, *)
+            let nElements = viewNDArray.shape.product()
 
             if viewNDArray.shape != valuesNDArray.shape {
                 (viewNDArray, valuesNDArray) = broadcast(viewNDArray, and: valuesNDArray)
@@ -79,9 +93,9 @@ extension NDArray {
 
             viewNDArray.data.value.withUnsafeMutableBufferPointer { view in
                 valuesNDArray.data.value.withUnsafeBufferPointer { values in
-                    for i in 0 ..< nElements {
-                        let viewIndex = viewNDArray.realIndex(of: i)
-                        let valuesIndex = valuesNDArray.realIndex(of: i)
+                    for index in indexSequence(range: 0 ..< nElements, shape: viewNDArray.shape) {
+                        let viewIndex = viewNDArray.linearIndex(at: index.rectangularIndex)
+                        let valuesIndex = valuesNDArray.linearIndex(at: index.rectangularIndex)
 
                         view[viewIndex] = values[valuesIndex]
                     }

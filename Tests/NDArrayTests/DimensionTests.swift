@@ -6,21 +6,21 @@ final class DimensionTests: XCTestCase {
     func testVirualEmpty() {
         let dimension = SingularDimension()
 
-        let realIndex = dimension.realIndex(of: 0)
+        let linearIndex = dimension.linearIndex(of: 0)
         let count = dimension.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 1)
     }
 
     func testVirualOneRepeated() {
         let dimension = SingularDimension().tiled(3)
 
-        let realIndex = dimension.realIndex(of: 1)
+        let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
         let realCount = dimension.memory_layout.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
         XCTAssertEqual(realCount, 1)
     }
@@ -28,11 +28,11 @@ final class DimensionTests: XCTestCase {
     func testVirualStrided() {
         let dimension = SingularDimension().tiled(10).sliced(stride: 3)
 
-        let realIndex = dimension.realIndex(of: 1)
+        let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
         let realCount = dimension.memory_layout.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 4)
         XCTAssertEqual(realCount, 1)
     }
@@ -40,11 +40,11 @@ final class DimensionTests: XCTestCase {
     func testVirualStridedMultiple() {
         let dimension = SingularDimension().tiled(4).sliced(stride: 3)
 
-        let realIndex = dimension.realIndex(of: 1)
+        let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
         let realCount = dimension.memory_layout.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 2)
         XCTAssertEqual(realCount, 1)
     }
@@ -52,11 +52,11 @@ final class DimensionTests: XCTestCase {
     func testVirualStridedMultiple2() {
         let dimension = SingularDimension().tiled(7).sliced(stride: 3)
 
-        let realIndex = dimension.realIndex(of: 1)
+        let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
         let realCount = dimension.memory_layout.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
         XCTAssertEqual(realCount, 1)
     }
@@ -64,11 +64,11 @@ final class DimensionTests: XCTestCase {
     func testVirualStridedMultiple3() {
         let dimension = SingularDimension().tiled(8).sliced(stride: 3)
 
-        let realIndex = dimension.realIndex(of: 1)
+        let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
         let realCount = dimension.memory_layout.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
         XCTAssertEqual(realCount, 1)
     }
@@ -76,11 +76,11 @@ final class DimensionTests: XCTestCase {
     func testVirualStridedMultiple4() {
         let dimension = SingularDimension().tiled(9).sliced(stride: 3)
 
-        let realIndex = dimension.realIndex(of: 1)
+        let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
         let realCount = dimension.memory_layout.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
         XCTAssertEqual(realCount, 1)
     }
@@ -88,11 +88,11 @@ final class DimensionTests: XCTestCase {
     func testVirualStridedMultiple5() {
         let dimension = SingularDimension().tiled(9).sliced(start: 5, end: 6, stride: 3)
 
-        let realIndex = dimension.realIndex(of: 0)
+        let linearIndex = dimension.linearIndex(of: 0)
         let count = dimension.length
         let realCount = dimension.memory_layout.length
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 1)
         XCTAssertEqual(realCount, 1)
     }
@@ -100,15 +100,15 @@ final class DimensionTests: XCTestCase {
     func testVirualEmpty2() {
         let dimension = SingularDimension().tiled(3)
 
-        let realIndex = dimension.realIndex(of: 1)
+        let linearIndex = dimension.linearIndex(of: 1)
 
-        XCTAssertEqual(realIndex, 0)
+        XCTAssertEqual(linearIndex, 0)
     }
 
     func testScan() {
         let accumulatedProduct = [1, 2, 3, 4].scan(*)
 
-        let total = accumulatedProduct.reduce(0, +)
+        let total = accumulatedProduct.sum()
 
         XCTAssertEqual(total, 33)
     }

@@ -15,20 +15,20 @@ public protocol DimensionProtocol {
     var memory_layout: MemoryLayout { get }
 
     @inlinable
-    func realIndex(of: Int) -> Int
+    func linearIndex(of: Int) -> Int
 }
 
-public protocol SqueezedDimension: DimensionProtocol {}
+// public protocol SqueezedDimension: DimensionProtocol {}
 public protocol UnmodifiedDimension: DimensionProtocol {}
 
 extension DimensionProtocol {
     @inlinable
     public func strideValue(of index: Int) -> Int {
-        realIndex(of: index) * memory_layout.stride
+        linearIndex(of: index) * memory_layout.stride
     }
 }
 
-public struct Dimension: DimensionProtocol, UnmodifiedDimension {
+public class Dimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int
     public let memory_layout: MemoryLayout
 
@@ -38,10 +38,10 @@ public struct Dimension: DimensionProtocol, UnmodifiedDimension {
     }
 
     @inlinable
-    public func realIndex(of index: Int) -> Int { index }
+    public func linearIndex(of index: Int) -> Int { index }
 }
 
-public struct SingularDimension: DimensionProtocol, UnmodifiedDimension {
+public class SingularDimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int = 1
     public let memory_layout: MemoryLayout
 
@@ -50,10 +50,10 @@ public struct SingularDimension: DimensionProtocol, UnmodifiedDimension {
     }
 
     @inlinable
-    public func realIndex(of index: Int) -> Int { 0 }
+    public func linearIndex(of index: Int) -> Int { 0 }
 }
 
-public struct SlicedDimension: DimensionProtocol {
+public class SlicedDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public let length: Int
 
@@ -79,12 +79,12 @@ public struct SlicedDimension: DimensionProtocol {
     }
 
     @inlinable
-    public func realIndex(of index: Int) -> Int {
-        return base.realIndex(of: start + index * stride)
+    public func linearIndex(of index: Int) -> Int {
+        return base.linearIndex(of: start + index * stride)
     }
 }
 
-public struct InvertedDimension: DimensionProtocol {
+public class InvertedDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public let length: Int
 
@@ -98,34 +98,12 @@ public struct InvertedDimension: DimensionProtocol {
     }
 
     @inlinable
-    public func realIndex(of index: Int) -> Int {
-        base.realIndex(of: length - 1 - index)
+    public func linearIndex(of index: Int) -> Int {
+        base.linearIndex(of: length - 1 - index)
     }
 }
 
-public struct IndexedDimension: DimensionProtocol, SqueezedDimension {
-    public let base: DimensionProtocol
-    public let length: Int
-
-    public let start: Int
-
-    public var memory_layout: MemoryLayout
-
-    fileprivate init(base: DimensionProtocol, start: Int) {
-        self.base = base
-        self.start = start
-
-        memory_layout = base.memory_layout
-        length = 1
-    }
-
-    @inlinable
-    public func realIndex(of index: Int) -> Int {
-        base.realIndex(of: index + start)
-    }
-}
-
-public struct TiledDimension: DimensionProtocol {
+public class TiledDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public var length: Int
     public var repetitions: Int
@@ -140,8 +118,8 @@ public struct TiledDimension: DimensionProtocol {
     }
 
     @inlinable
-    public func realIndex(of index: Int) -> Int {
-        base.realIndex(of: index % base.length)
+    public func linearIndex(of index: Int) -> Int {
+        base.linearIndex(of: index % base.length)
     }
 }
 
@@ -171,10 +149,6 @@ extension DimensionProtocol {
 
     public func tiled(_ repetitions: Int) -> DimensionProtocol {
         TiledDimension(base: self, repetitions: repetitions)
-    }
-
-    public func indexed(_ start: Int) -> DimensionProtocol {
-        IndexedDimension(base: self, start: start)
     }
 
     public var inverted: DimensionProtocol {

@@ -12,9 +12,9 @@ public final class Ref<A>: CustomStringConvertible {
 
 public struct NDArray<Scalar> {
     @usableFromInline internal var data: Ref<[Scalar]>
-
-    @inlinable public var shape: [Int] { arrayShape.virtualShape }
     @usableFromInline internal var arrayShape: ArrayShape
+
+    public var shape: [Int] { arrayShape.dimensionLengths }
 
     @usableFromInline
     internal init(_ data: Ref<[Scalar]>, shape: ArrayShape) {
@@ -26,13 +26,13 @@ public struct NDArray<Scalar> {
         let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
 
         precondition(
-            calculatedShape.reduce(1, *) == flatData.count,
+            calculatedShape.product() == flatData.count,
             "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
         )
 
         if let shape = shape {
             precondition(
-                shape.reduce(1, *) == flatData.count,
+                shape.product() == flatData.count,
                 "Invalid shape, number of elements"
             )
         }
@@ -48,18 +48,37 @@ public struct NDArray<Scalar> {
     }
 
     public init(_ data: Scalar) {
-        arrayShape = ArrayShape([DimensionProtocol]())
+        arrayShape = ArrayShape([DimensionProtocol](), linearMemoryOffset: 0)
         self.data = Ref([data])
     }
 
     @inlinable
-    public func realIndex(of index: Int) -> Int {
-        arrayShape.realIndex(of: index)
+    public func linearIndex(at indexes: UnsafeMutableBufferPointer<Int>) -> Int {
+        arrayShape.linearIndex(of: indexes)
     }
 
     @inlinable
-    public func dataValue(at index: Int) -> Scalar {
-        let realIndex = arrayShape.realIndex(of: index)
-        return data.value[realIndex]
+    public func linearIndex(at indexes: [Int]) -> Int {
+        var indexes = indexes
+
+        return indexes.withUnsafeMutableBufferPointer { indexes in
+            linearIndex(at: indexes)
+        }
+    }
+
+    @inlinable
+    public func dataValue(at indexes: UnsafeMutableBufferPointer<Int>) -> Scalar {
+        return data.value[
+            arrayShape.linearIndex(of: indexes)
+        ]
+    }
+
+    @inlinable
+    public func dataValue(at indexes: [Int]) -> Scalar {
+        var indexes = indexes
+
+        return indexes.withUnsafeMutableBufferPointer { indexes in
+            dataValue(at: indexes)
+        }
     }
 }

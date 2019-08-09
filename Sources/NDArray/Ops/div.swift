@@ -31,7 +31,7 @@ extension NDArray where Scalar: Divisible {
 
 //     public static func / (_ left: Scalar, _ right: NDArray<Scalar>) -> NDArray<Scalar> {
 //         let left = NDArray(
-//             Array(repeating: left, count: right.shape.reduce(1, *)),
+//             Array(repeating: left, count: right.shape.product()),
 //             shape: right.shape
 //         )
 
