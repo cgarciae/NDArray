@@ -8,6 +8,13 @@ NDArray is a multidimensional array library written in Swift that aims to become
 2. Create specialized implementations of linear algebra operations for NDArrays containing numeric types using libraries like BLAS and LAPACK.
 3. Make `NDArray` and its operations `differentiable` so its usable along with Swift for TensorFlow.
 
+## Tutorials ![](https://www.tensorflow.org/images/colab_logo_32px.png)
+
+Tutorial | Last Updated |
+-------- | ------------ |
+[Readme in Swift for Colab](https://colab.research.google.com/drive/1HZ58jllhtet1Ao9lD4RBb7d31o4h5EHm) | August 2019
+
+
 ## Installation
 You can install it via SwiftPM via:
 ```swift
