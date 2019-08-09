@@ -23,27 +23,28 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .systemLibrary(
-            name: "CBlas",
-            path: "Sources/C/CBlas",
-            pkgConfig: "blas",
-            providers: [
-                .apt(["gfortran", "liblapack3", "liblapacke", "liblapacke-dev", "libopenblas-base", "libopenblas-dev"]),
-                .brew(["homebrew/dupes/lapack", "homebrew/science/openblas"]),
-            ]
-        ),
-        .systemLibrary(
-            name: "CLapack",
-            path: "Sources/C/CLapack",
-            pkgConfig: "lapack",
-            providers: [
-                .apt(["gfortran", "liblapack3", "liblapacke", "liblapacke-dev", "libopenblas-base", "libopenblas-dev"]),
-                .brew(["homebrew/dupes/lapack", "homebrew/science/openblas"]),
-            ]
-        ),
+        // .systemLibrary(
+        //     name: "CBlas",
+        //     path: "Sources/C/CBlas",
+        //     pkgConfig: "blas",
+        //     providers: [
+        //         .apt(["gfortran", "liblapack3", "liblapacke", "liblapacke-dev", "libopenblas-base", "libopenblas-dev"]),
+        //         .brew(["homebrew/dupes/lapack", "homebrew/science/openblas"]),
+        //     ]
+        // ),
+        // .systemLibrary(
+        //     name: "CLapack",
+        //     path: "Sources/C/CLapack",
+        //     pkgConfig: "lapack",
+        //     providers: [
+        //         .apt(["gfortran", "liblapack3", "liblapacke", "liblapacke-dev", "libopenblas-base", "libopenblas-dev"]),
+        //         .brew(["homebrew/dupes/lapack", "homebrew/science/openblas"]),
+        //     ]
+        // ),
         .target(
             name: "NDArray",
-            dependencies: ["CBlas", "CLapack"]
+            dependencies: []
+            // dependencies: ["CBlas", "CLapack"]
         ),
         .target(
             name: "Debug",
