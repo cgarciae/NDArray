@@ -167,7 +167,7 @@ final class NDArrayTests: XCTestCase {
         _ = (a + b) * a
     }
 
-    func testExample2() {
+    func testCustomType() {
         let a = NDArray<Point>(
             [Point(x: 1, y: 2), Point(x: 2, y: 3)]
         )
@@ -175,7 +175,30 @@ final class NDArrayTests: XCTestCase {
             [Point(x: 4, y: 5), Point(x: 6, y: 7)]
         )
 
-        _ = a + b
+        let c = a + b
+
+        let target = NDArray<Point>(
+            [Point(x: 5, y: 7), Point(x: 8, y: 10)]
+        )
+
+        XCTAssertEqual(c.data.value, target.data.value)
+    }
+
+    func testCustomType2() {
+        let a = NDArray<Point>(
+            [Point(x: 1, y: 2), Point(x: 2, y: 3)]
+        )
+        let b = NDArray<Point>(
+            [Point(x: 4, y: 5), Point(x: 6, y: 7)]
+        )
+
+        let c: NDArray<Point> = elementwise(a, b, apply: +)
+
+        let target = NDArray<Point>(
+            [Point(x: 5, y: 7), Point(x: 8, y: 10)]
+        )
+
+        XCTAssertEqual(c.data.value, target.data.value)
     }
 
     func testElementWiseApplyParallel() {
@@ -323,6 +346,87 @@ final class NDArrayTests: XCTestCase {
         XCTAssert(ranges.count == 11)
     }
 
+    func testSqueezeAxis() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+        ])
+
+        let b = a[squeeze, all]
+
+        XCTAssertEqual(a.shape, [1, 4])
+        XCTAssertEqual(b.shape, [4])
+    }
+
+    func testNewAxis() {
+        let a = NDArray<Int>(
+            [1, 2, 3, 4]
+        )
+        let b = a[new]
+
+        XCTAssertEqual(a.shape, [4])
+        XCTAssertEqual(b.shape, [1, 4])
+    }
+
+    func testAll() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [2, 3, 4, 5],
+        ])
+        let b = a[ArrayRange.all, 1]
+
+        XCTAssertEqual(b.copy().data.value, [2, 3])
+    }
+
+    func testEllipsis() {
+        let a = NDArray<Int>(
+            Array(1 ... 16),
+            shape: [2, 2, 2, 2]
+        )
+        let b = a[ArrayRange.ellipsis]
+
+        XCTAssertEqual(b.shape, [2, 2, 2, 2])
+    }
+
+    func testEllipsis2() {
+        let a = NDArray<Int>(
+            Array(1 ... 16),
+            shape: [2, 2, 2, 2]
+        )
+        let b = a[0, ArrayRange.ellipsis]
+
+        XCTAssertEqual(b.shape, [2, 2, 2])
+    }
+
+    func testEllipsis3() {
+        let a = NDArray<Int>(
+            Array(1 ... 16),
+            shape: [2, 2, 2, 2]
+        )
+        let b = a[0, rest, 0]
+
+        XCTAssertEqual(b.shape, [2, 2])
+    }
+
+    func testEllipsis4() {
+        let a = NDArray<Int>(
+            Array(1 ... 16),
+            shape: [2, 2, 2, 2]
+        )
+        let b = a[0, ArrayRange.ellipsis, 0, 0]
+
+        XCTAssertEqual(b.shape, [2])
+    }
+
+    func testEllipsis5() {
+        let a = NDArray<Int>(
+            Array(1 ... 16),
+            shape: [2, 2, 2, 2]
+        )
+        let b = a[0, 0, rest, 0, 0]
+
+        XCTAssertEqual(b.shape, [])
+    }
+
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApply2D", testElementWiseApply2D),
@@ -336,7 +440,8 @@ final class NDArrayTests: XCTestCase {
         ("testElementWiseApply3DConstructor", testElementWiseApply3DConstructor),
         ("testTransposed", testTransposed),
         ("testExample", testExample),
-        ("testExample2", testExample2),
+        ("testCustomType", testCustomType),
+        ("testCustomType2", testCustomType2),
         ("testBroadcast1", testBroadcast1),
         ("testBroadcast2", testBroadcast2),
         ("testBroadcast3", testBroadcast3),
@@ -344,5 +449,13 @@ final class NDArrayTests: XCTestCase {
         ("testAssign2", testAssign2),
         ("testAssign3", testAssign3),
         ("testAssign4", testAssign4),
+        ("testSqueezeAxis", testSqueezeAxis),
+        ("testNewAxis", testNewAxis),
+        ("testAll", testAll),
+        ("testEllipsis", testEllipsis),
+        ("testEllipsis2", testEllipsis2),
+        ("testEllipsis3", testEllipsis3),
+        ("testEllipsis4", testEllipsis4),
+        ("testEllipsis5", testEllipsis5),
     ]
 }
