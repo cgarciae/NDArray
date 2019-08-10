@@ -41,8 +41,6 @@ extension NDArray {
                 }
             }
 
-            print(ranges)
-
             precondition(shape.count >= ranges.count)
 
             var dimensions = arrayShape.dimensions
