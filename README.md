@@ -21,7 +21,6 @@ You can install it via SwiftPM via:
 .package(url: "https://github.com/cgarciae/NDArray", from: "0.0.7")
 ```
 It might work on other compatible package managers. This package is only tested in Swift 5.1, compatibility with previous version is not guaranteed.
-```
 
 ## Example
 `NDArray` is a generic container type just like `Array` with the difference that its multidimensional. If its elements conform to certain protocols then certain methods and operators like `+`, `-`, `*`, etc, can be used to efficiently perform computations of the whole collection.
