@@ -1,9 +1,15 @@
 import NDArray
-
 let a = NDArray<Int>([
     [1, 2, 3],
     [4, 5, 6],
-]).transposed([1, 0]).copy()
+])
+
+print(a[1 |> 3 |> -1])
+
+// let a = NDArray<Int>([
+//     [1, 2, 3],
+//     [4, 5, 6],
+// ]).transposed([1, 0]).copy()
 
 // let s = indexSequence(range: 3 ..< 10, shape: [10, 2, 5])
 
