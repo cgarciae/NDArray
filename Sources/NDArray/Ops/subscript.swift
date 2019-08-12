@@ -276,6 +276,10 @@ public extension Int {
         Slice(start: lhs.start, end: lhs.end, stride: rhs)
     }
 
+    static func | (lhs: Int, rhs: Slice) -> Slice {
+        Slice(start: lhs, end: rhs.start, stride: rhs.end!)
+    }
+
     static prefix func || (rhs: Int) -> Slice {
         Slice(stride: rhs)
     }
