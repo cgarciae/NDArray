@@ -18,7 +18,7 @@ Tutorial | Last Updated |
 ## Installation
 You can install it via SwiftPM via:
 ```swift
-.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.7")
+.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.8")
 ```
 It might work on other compatible package managers. This package is only tested in Swift 5.1, compatibility with previous version is not guaranteed.
 
