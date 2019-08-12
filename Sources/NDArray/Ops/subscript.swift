@@ -246,8 +246,10 @@ public struct Slice: ArrayExpression {
 postfix operator |
 prefix operator |
 prefix operator |-
+infix operator |-
 prefix operator ||
 prefix operator ||-
+infix operator ||-
 
 public extension Int {
     static postfix func | (lhs: Int) -> Slice {
@@ -260,6 +262,10 @@ public extension Int {
 
     static prefix func |- (rhs: Int) -> Slice {
         Slice(end: -rhs)
+    }
+
+    static func |- (lhs: Int, rhs: Int) -> Slice {
+        Slice(start: lhs, end: -rhs)
     }
 
     static func | (lhs: Int, rhs: Int) -> Slice {
@@ -276,6 +282,10 @@ public extension Int {
 
     static prefix func ||- (rhs: Int) -> Slice {
         Slice(stride: -rhs)
+    }
+
+    static func ||- (lhs: Int, rhs: Int) -> Slice {
+        Slice(start: lhs, stride: -rhs)
     }
 
     static func || (lhs: Int, rhs: Int) -> Slice {
