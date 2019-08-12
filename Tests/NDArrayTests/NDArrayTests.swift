@@ -291,8 +291,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0|] = NDArray<Int>([1, 1, 1, 1])
-        b[0|] = NDArray<Int>([2, 2, 2, 2])
+        a[0|>] = NDArray<Int>([1, 1, 1, 1])
+        b[0|>] = NDArray<Int>([2, 2, 2, 2])
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])
@@ -302,8 +302,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0|] = NDArray(1)
-        b[0|] = NDArray(2)
+        a[0|>] = NDArray(1)
+        b[0|>] = NDArray(2)
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])
@@ -313,8 +313,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0|] = NDArray(1)
-        b[0|] = NDArray(2)
+        a[0|>] = NDArray(1)
+        b[0|>] = NDArray(2)
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])
@@ -324,8 +324,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0|] = [1, 1, 1, 1]
-        b[0|] = [2, 2, 2, 2]
+        a[0|>] = [1, 1, 1, 1]
+        b[0|>] = [2, 2, 2, 2]
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])
@@ -427,6 +427,30 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(b.shape, [])
     }
 
+    func testNegativeStride() {
+        let a = NDArray<Int>([1, 2, 3, 4, 5])
+
+        let b = a[((-1)...).stride(-1)]
+
+        XCTAssertEqual(a.data.value, b.copy().data.value.reversed())
+    }
+
+    func testNegativeStride2() {
+        let a = NDArray<Int>([1, 2, 3, 4, 5])
+
+        let b = a[||>-1]
+
+        XCTAssertEqual(a.data.value, b.copy().data.value.reversed())
+    }
+
+    func testNegativeStride3() {
+        let a = NDArray<Int>([1, 2, 3, 4, 5])
+
+        let b = a[|>1 |> -2]
+
+        XCTAssertEqual(b.copy().data.value, [5, 3])
+    }
+
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApply2D", testElementWiseApply2D),
@@ -457,5 +481,8 @@ final class NDArrayTests: XCTestCase {
         ("testEllipsis3", testEllipsis3),
         ("testEllipsis4", testEllipsis4),
         ("testEllipsis5", testEllipsis5),
+        ("testNegativeStride", testNegativeStride),
+        ("testNegativeStride2", testNegativeStride2),
+        ("testNegativeStride3", testNegativeStride3),
     ]
 }

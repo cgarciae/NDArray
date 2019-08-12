@@ -124,8 +124,8 @@ public struct TiledDimension: DimensionProtocol {
 }
 
 extension DimensionProtocol {
-    public func sliced(start: Int = 0, end: Int? = nil, stride: Int = 1) -> DimensionProtocol {
-        var start = start
+    public func sliced(start: Int? = nil, end: Int? = nil, stride: Int = 1) -> DimensionProtocol {
+        var start = start ?? (stride > 0 ? 0 : -1)
         var end = end ?? (stride > 0 ? length : 0)
 
         if start < 0 {

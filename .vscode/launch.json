@@ -8,8 +8,19 @@
             "type": "lldb",
             "request": "launch",
             "preLaunchTask": "swift-build",
-            "name": "Swift: project",
+            "name": "Swift: project main",
             "program": "${workspaceFolder}/.build/debug/Debug",
+            "args": [],
+            "sourceLanguages": [
+                "swift"
+            ]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "preLaunchTask": "swift-build",
+            "name": "Swift: project test",
+            "program": "${workspaceFolder}/.build/debug/${workspaceFolderBasename}PackageTests.xctest",
             "args": [],
             "sourceLanguages": [
                 "swift"

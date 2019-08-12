@@ -55,10 +55,8 @@ extension NDArray {
                     dimensionToBeRemoved.append(i)
 
                 case let .slice(start: start, end: end, stride: stride):
-                    let start = start ?? 0
-                    let end = end ?? dimensions[i].length
 
-                    if start == 0, end == dimensions[i].length, stride == 1 {
+                    if start == 0, end == nil || end! == dimensions[i].length, stride == 1 {
                         continue
                     }
 
