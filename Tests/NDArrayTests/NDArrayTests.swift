@@ -291,8 +291,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0...] = NDArray<Int>([1, 1, 1, 1])
-        b[0...] = NDArray<Int>([2, 2, 2, 2])
+        a[0|] = NDArray<Int>([1, 1, 1, 1])
+        b[0|] = NDArray<Int>([2, 2, 2, 2])
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])
@@ -302,8 +302,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0...] = NDArray(1)
-        b[0...] = NDArray(2)
+        a[0|] = NDArray(1)
+        b[0|] = NDArray(2)
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])
@@ -313,8 +313,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0...] = NDArray(1)
-        b[0...] = NDArray(2)
+        a[0|] = NDArray(1)
+        b[0|] = NDArray(2)
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])
@@ -324,8 +324,8 @@ final class NDArrayTests: XCTestCase {
         var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
         var b = a
 
-        a[0...] = [1, 1, 1, 1]
-        b[0...] = [2, 2, 2, 2]
+        a[0|] = [1, 1, 1, 1]
+        b[0|] = [2, 2, 2, 2]
 
         XCTAssertEqual(a.data.value, [1, 1, 1, 1])
         XCTAssertEqual(b.data.value, [2, 2, 2, 2])

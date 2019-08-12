@@ -54,60 +54,20 @@ extension NDArray {
                     linearMemoryOffset += dimensions[i].strideValue(of: index)
                     dimensionToBeRemoved.append(i)
 
-                case let .range(range, stride: stride):
-                    if range.lowerBound == 0, range.upperBound == dimensions[i].length, stride == 1 {
+                case let .slice(start: start, end: end, stride: stride):
+                    let start = start ?? 0
+                    let end = end ?? dimensions[i].length
+
+                    if start == 0, end == dimensions[i].length, stride == 1 {
                         continue
                     }
 
                     dimensions[i] = dimensions[i].sliced(
-                        start: range.lowerBound,
-                        end: range.upperBound,
+                        start: start,
+                        end: end,
                         stride: stride
                     )
 
-                case let .closedRange(range, stride: stride):
-                    if range.lowerBound == 0, range.upperBound + 1 == dimensions[i].length, stride == 1 {
-                        continue
-                    }
-
-                    dimensions[i] = dimensions[i].sliced(
-                        start: range.lowerBound,
-                        end: range.upperBound + 1,
-                        stride: stride
-                    )
-
-                case let .partialRangeUpTo(range, stride: stride):
-                    if range.upperBound == dimensions[i].length, stride == 1 {
-                        continue
-                    }
-                    dimensions[i] = dimensions[i].sliced(
-                        start: 0,
-                        end: range.upperBound,
-                        stride: stride
-                    )
-
-                case let .partialRangeThrough(range, stride: stride):
-
-                    if range.upperBound + 1 == dimensions[i].length, stride == 1 {
-                        continue
-                    }
-
-                    dimensions[i] = dimensions[i].sliced(
-                        start: 0,
-                        end: range.upperBound + 1,
-                        stride: stride
-                    )
-
-                case let .partialRangeFrom(range, stride: stride):
-
-                    if range.lowerBound == 0, stride == 1 {
-                        continue
-                    }
-
-                    dimensions[i] = dimensions[i].sliced(
-                        start: range.lowerBound,
-                        stride: stride
-                    )
                 case .all:
                     continue
                 case .squeezeAxis:
@@ -214,11 +174,7 @@ public enum ArrayRange: ArrayExpression {
     case squeezeAxis
     case all
     case index(Int)
-    case range(Range<Int>, stride: Int)
-    case closedRange(ClosedRange<Int>, stride: Int)
-    case partialRangeFrom(PartialRangeFrom<Int>, stride: Int)
-    case partialRangeUpTo(PartialRangeUpTo<Int>, stride: Int)
-    case partialRangeThrough(PartialRangeThrough<Int>, stride: Int)
+    case slice(start: Int? = nil, end: Int? = nil, stride: Int = 1)
 
     public var arrayRange: ArrayRange { self }
 }
@@ -237,36 +193,87 @@ extension Int: ArrayExpression {
 }
 
 extension Range: ArrayExpression where Bound == Int {
-    public var arrayRange: ArrayRange { .range(self, stride: 1) }
+    public var arrayRange: ArrayRange { .slice(start: lowerBound, end: upperBound) }
     public func stride(_ stride: Int) -> ArrayRange {
-        .range(self, stride: stride)
+        .slice(start: lowerBound, end: upperBound, stride: stride)
     }
 }
 
 extension ClosedRange: ArrayExpression where Bound == Int {
-    public var arrayRange: ArrayRange { .closedRange(self, stride: 1) }
+    public var arrayRange: ArrayRange { .slice(start: lowerBound, end: upperBound + 1) }
     public func stride(_ stride: Int) -> ArrayRange {
-        .closedRange(self, stride: stride)
+        .slice(start: lowerBound, end: upperBound + 1, stride: stride)
     }
 }
 
 extension PartialRangeFrom: ArrayExpression where Bound == Int {
-    public var arrayRange: ArrayRange { .partialRangeFrom(self, stride: 1) }
+    public var arrayRange: ArrayRange { .slice(start: lowerBound) }
     public func stride(_ stride: Int) -> ArrayRange {
-        .partialRangeFrom(self, stride: stride)
+        .slice(start: lowerBound, stride: stride)
     }
 }
 
 extension PartialRangeUpTo: ArrayExpression where Bound == Int {
-    public var arrayRange: ArrayRange { .partialRangeUpTo(self, stride: 1) }
+    public var arrayRange: ArrayRange { .slice(end: upperBound) }
     public func stride(_ stride: Int) -> ArrayRange {
-        .partialRangeUpTo(self, stride: stride)
+        .slice(end: upperBound, stride: stride)
     }
 }
 
 extension PartialRangeThrough: ArrayExpression where Bound == Int {
-    public var arrayRange: ArrayRange { .partialRangeThrough(self, stride: 1) }
+    public var arrayRange: ArrayRange { .slice(end: upperBound + 1) }
     public func stride(_ stride: Int) -> ArrayRange {
-        .partialRangeThrough(self, stride: stride)
+        .slice(end: upperBound + 1, stride: stride)
+    }
+}
+
+public struct Slice: ArrayExpression {
+    let start: Int?
+    let end: Int?
+    let stride: Int
+
+    internal init(start: Int? = nil, end: Int? = nil, stride: Int = 1) {
+        self.start = start
+        self.end = end
+        self.stride = stride
+    }
+
+    public var arrayRange: ArrayRange {
+        .slice(start: start, end: end, stride: stride)
+    }
+}
+
+postfix operator |
+prefix operator |
+prefix operator ||
+prefix operator ||-
+
+extension Int {
+    static postfix func | (lhs: Int) -> Slice {
+        Slice(start: lhs)
+    }
+
+    static prefix func | (rhs: Int) -> Slice {
+        Slice(end: rhs)
+    }
+
+    static func | (lhs: Int, rhs: Int) -> Slice {
+        Slice(start: lhs, end: rhs)
+    }
+
+    static func | (lhs: Slice, rhs: Int) -> Slice {
+        Slice(start: lhs.start, end: lhs.end, stride: rhs)
+    }
+
+    static prefix func || (rhs: Int) -> Slice {
+        Slice(stride: rhs)
+    }
+
+    static prefix func ||- (rhs: Int) -> Slice {
+        Slice(stride: -rhs)
+    }
+
+    static func || (lhs: Int, rhs: Int) -> Slice {
+        Slice(start: lhs, stride: rhs)
     }
 }
