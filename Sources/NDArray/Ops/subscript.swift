@@ -249,7 +249,7 @@ prefix operator |-
 prefix operator ||
 prefix operator ||-
 
-extension Int {
+public extension Int {
     static postfix func | (lhs: Int) -> Slice {
         Slice(start: lhs)
     }
