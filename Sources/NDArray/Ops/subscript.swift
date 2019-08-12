@@ -51,6 +51,8 @@ extension NDArray {
             for (i, range) in ranges.enumerated() {
                 switch range {
                 case let .index(index):
+                    let index = index < 0 ? dimensions[i].length + index : index
+
                     linearMemoryOffset += dimensions[i].strideValue(of: index)
                     dimensionToBeRemoved.append(i)
 
