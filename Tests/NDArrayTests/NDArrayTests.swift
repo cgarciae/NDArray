@@ -451,6 +451,30 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(b.copy().data.value, [5, 3])
     }
 
+    func testNegativeIndex() {
+        let a = NDArray<Int>([1, 2, 3, 4, 5])
+
+        let b = a[-1]
+
+        XCTAssertEqual(b.copy().data.value, [5])
+    }
+
+    func testFilter() {
+        let a = NDArray<Int>([1, 2, 3, 4, 5])
+
+        let b = a[[1, 1, 0, 2, -1]]
+
+        XCTAssertEqual(b.copy().data.value, [2, 2, 1, 3, 5])
+    }
+
+    func testFilter2() {
+        let a = NDArray<Int>([1, 2, 3, 4, 5])
+
+        let b = a[[true, true, false, false, true]]
+
+        XCTAssertEqual(b.copy().data.value, [1, 2, 5])
+    }
+
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApply2D", testElementWiseApply2D),
@@ -484,5 +508,8 @@ final class NDArrayTests: XCTestCase {
         ("testNegativeStride", testNegativeStride),
         ("testNegativeStride2", testNegativeStride2),
         ("testNegativeStride3", testNegativeStride3),
+        ("testNegativeIndex", testNegativeIndex),
+        ("testFilter", testFilter),
+        ("testFilter2", testFilter2),
     ]
 }

@@ -123,6 +123,28 @@ public struct TiledDimension: DimensionProtocol {
     }
 }
 
+public struct FilteredDimension: DimensionProtocol {
+    public let base: DimensionProtocol
+    public var length: Int
+    public var memory_layout: MemoryLayout
+    public var indexes: [Int]
+
+    fileprivate init(base: DimensionProtocol, indexes: [Int]) {
+        self.base = base
+        self.indexes = indexes.map { index in
+            index < 0 ? index + base.length : index
+        }
+
+        length = indexes.count
+        memory_layout = base.memory_layout
+    }
+
+    @inlinable
+    public func linearIndex(of index: Int) -> Int {
+        base.linearIndex(of: indexes[index])
+    }
+}
+
 extension DimensionProtocol {
     public func sliced(start: Int? = nil, end: Int? = nil, stride: Int = 1) -> DimensionProtocol {
         var start = start ?? (stride > 0 ? 0 : -1)
@@ -151,8 +173,7 @@ extension DimensionProtocol {
         TiledDimension(base: self, repetitions: repetitions)
     }
 
-    // NOTE: this can be deleted
-    public var inverted: DimensionProtocol {
-        InvertedDimension(base: self)
+    public func select(indexes: [Int]) -> DimensionProtocol {
+        FilteredDimension(base: self, indexes: indexes)
     }
 }

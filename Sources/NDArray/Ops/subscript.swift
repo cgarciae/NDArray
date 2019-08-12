@@ -12,12 +12,12 @@ public let squeeze = ArrayRange.squeezeAxis
 
 extension NDArray {
     @inlinable
-    public subscript(_ ranges: [ArrayExpression]) -> NDArray {
+    public subscript(_ ranges: ArrayExpression...) -> NDArray {
         get {
             self[r: ranges.map { $0.arrayRange }]
         }
-        mutating set(ndArray) {
-            self[r: ranges.map { $0.arrayRange }] = ndArray
+        mutating set(ndarray) {
+            self[r: ranges.map { $0.arrayRange }] = ndarray
         }
     }
 
@@ -67,6 +67,8 @@ extension NDArray {
                         end: end,
                         stride: stride
                     )
+                case let .filter(indexes):
+                    dimensions[i] = dimensions[i].select(indexes: indexes)
 
                 case .all:
                     continue
@@ -122,7 +124,7 @@ extension NDArray {
                 arrayShape = cp.arrayShape
             }
 
-            var viewNDArray = self[ranges]
+            var viewNDArray = self[r: ranges]
             let nElements = viewNDArray.shape.product()
 
             if viewNDArray.shape != ndArray.shape {
@@ -141,31 +143,24 @@ extension NDArray {
             }
         }
     }
-
-    @inlinable
-    public subscript(_ ranges: ArrayExpression...) -> NDArray {
-        get {
-            self[ranges]
-        }
-        set(value) {
-            self[ranges] = value
-        }
-    }
-
-    @inlinable
-    public subscript(r ranges: ArrayRange...) -> NDArray {
-        get {
-            self[r: ranges]
-        }
-        set(value) {
-            self[r: ranges] = value
-        }
-    }
 }
 
 public protocol ArrayExpression {
     @inlinable
     var arrayRange: ArrayRange { get }
+}
+
+extension Array: ArrayExpression {
+    public var arrayRange: ArrayRange {
+        if self is [Int] {
+            return .filter(self as! [Int])
+        } else if self is [Bool] {
+            let array = self as! [Bool]
+            return .filter(array.enumerated().filter { $0.1 }.map { $0.0 })
+        } else {
+            fatalError("Type \(Element.self) not supported")
+        }
+    }
 }
 
 public enum ArrayRange: ArrayExpression {
@@ -174,6 +169,7 @@ public enum ArrayRange: ArrayExpression {
     case squeezeAxis
     case all
     case index(Int)
+    case filter([Int])
     case slice(start: Int? = nil, end: Int? = nil, stride: Int = 1)
 
     public var arrayRange: ArrayRange { self }
