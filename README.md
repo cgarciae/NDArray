@@ -6,7 +6,7 @@ NDArray is a multidimensional array library written in Swift that aims to become
 
 1. Have an efficient multidimensional array interface with common things like indexing, slicing, broadcasting, etc. 
 2. Make `NDArray` and its operations `differentiable` so its usable along with Swift for TensorFlow.
-3. Create specialized implementations of linear algebra operations for NDArrays containing numeric types using BLAS, LAPACK or [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w).
+3. Create specialized implementations of linear algebra operations for NDArrays containing numeric types using BLAS, LAPACK, Accelerate, or [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w) depending on the environment.
 
 ## Tutorials ![](https://www.tensorflow.org/images/colab_logo_32px.png)
 
@@ -87,7 +87,7 @@ The first goal is the definition of the library's basic API using pure Swift wit
 The second goal is an obvious must have, Swift for TensorFlow's compiler with automatic differentiation is arguably the future of ML and we should use it.
 
 #### Linear Algebra Optimization
-The third goal is what you would expect from any HPC numeric library, the strategy would be to specialize functions/operations for numeric types by using BLAS, LAPACK or MLIR to speed computation. On the other hand, if successfully integrated with [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w), BLAS and LAPACK might not be necessary and NDArray could easily become one of the most performant numeric libraries out there.
+The third goal is what you would expect from any HPC numeric library, the strategy would be to specialize functions/operations for numeric types by using BLAS, LAPACK, Accelerate, or MLIR to speed computation. On the other hand, if successfully integrated with [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w), BLAS and LAPACK might not be necessary and NDArray could easily become one of the most performant numeric libraries out there.
 
 
 ## Roadmap
@@ -114,7 +114,7 @@ This can actually be started at any point, although it wont be that useful until
 - [ ] Make `NDArrays` operations differentiable.
 ##### 0.3: Linear Algebra Optimization
 - [x] Link BLAS and LAPACK
-- [ ] Specialize operations using BLAS, LAPACK or [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w)
+- [ ] Specialize operations using BLAS, LAPACK, Accelerate, or [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w)
 - [ ] `dot` 
 - [ ] ... 
 
