@@ -1,1 +1,2 @@
 --disable unusedArguments
+--disable spaceAroundOperators

@@ -240,56 +240,6 @@ public struct Slice: ArrayExpression {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// |>
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-postfix operator |>
-prefix operator |>
-prefix operator |>-
-infix operator |>: AdditionPrecedence
-infix operator ||>
-prefix operator ||>
-prefix operator ||>-
-
-public extension Int {
-    static postfix func |> (lhs: Int) -> Slice {
-        Slice(start: lhs)
-    }
-
-    static prefix func |> (rhs: Int) -> Slice {
-        Slice(end: rhs)
-    }
-
-    static prefix func |>- (rhs: Int) -> Slice {
-        Slice(end: -rhs)
-    }
-
-    static func |> (lhs: Int, rhs: Int) -> Slice {
-        Slice(start: lhs, end: rhs)
-    }
-
-    static func |> (lhs: Slice, rhs: Int) -> Slice {
-        Slice(start: lhs.start, end: lhs.end, stride: rhs)
-    }
-
-    static func |> (lhs: Int, rhs: Slice) -> Slice {
-        Slice(start: lhs, end: rhs.start, stride: rhs.end!)
-    }
-
-    static prefix func ||> (rhs: Int) -> Slice {
-        Slice(stride: rhs)
-    }
-
-    static prefix func ||>- (rhs: Int) -> Slice {
-        Slice(stride: -rhs)
-    }
-
-    static func ||> (lhs: Int, rhs: Int) -> Slice {
-        Slice(start: lhs, stride: rhs)
-    }
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 // ..
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -351,3 +301,53 @@ public extension Int {
         Slice(start: lhs, stride: rhs)
     }
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// |>
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+// postfix operator |>
+// prefix operator |>
+// prefix operator |>-
+// infix operator |>: AdditionPrecedence
+// infix operator ||>
+// prefix operator ||>
+// prefix operator ||>-
+
+// public extension Int {
+//     static postfix func |> (lhs: Int) -> Slice {
+//         Slice(start: lhs)
+//     }
+
+//     static prefix func |> (rhs: Int) -> Slice {
+//         Slice(end: rhs)
+//     }
+
+//     static prefix func |>- (rhs: Int) -> Slice {
+//         Slice(end: -rhs)
+//     }
+
+//     static func |> (lhs: Int, rhs: Int) -> Slice {
+//         Slice(start: lhs, end: rhs)
+//     }
+
+//     static func |> (lhs: Slice, rhs: Int) -> Slice {
+//         Slice(start: lhs.start, end: lhs.end, stride: rhs)
+//     }
+
+//     static func |> (lhs: Int, rhs: Slice) -> Slice {
+//         Slice(start: lhs, end: rhs.start, stride: rhs.end!)
+//     }
+
+//     static prefix func ||> (rhs: Int) -> Slice {
+//         Slice(stride: rhs)
+//     }
+
+//     static prefix func ||>- (rhs: Int) -> Slice {
+//         Slice(stride: -rhs)
+//     }
+
+//     static func ||> (lhs: Int, rhs: Int) -> Slice {
+//         Slice(start: lhs, stride: rhs)
+//     }
+// }

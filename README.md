@@ -12,13 +12,13 @@ NDArray is a multidimensional array library written in Swift that aims to become
 
 Tutorial | Last Updated |
 -------- | ------------ |
-[Basic API](https://colab.research.google.com/drive/1aULWtrtj6WsNeJe_vBnr_hswy0JIYDt_) | August 2019 |
+[Basic API](https://colab.research.google.com/drive/1aULWtrtj6WsNeJe_vBnr_hswy0JIYDt_) | August 13 2019 |
 
 
 ## Installation
 You can install it via SwiftPM via:
 ```swift
-.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.15")
+.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.16")
 ```
 It might work on other compatible package managers. This package is only tested in Swift 5.1, compatibility with previous version is not guaranteed.
 
