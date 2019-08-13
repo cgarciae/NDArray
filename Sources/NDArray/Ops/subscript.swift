@@ -297,6 +297,7 @@ postfix operator ..
 prefix operator ..
 prefix operator ..-
 infix operator ..: AdditionPrecedence
+infix operator ..-: AdditionPrecedence
 infix operator ....
 prefix operator ....
 prefix operator ....-
@@ -316,6 +317,10 @@ public extension Int {
 
     static func .. (lhs: Int, rhs: Int) -> Slice {
         Slice(start: lhs, end: rhs)
+    }
+
+    static func ..- (lhs: Int, rhs: Int) -> Slice {
+        Slice(start: lhs, end: -rhs)
     }
 
     static func .. (lhs: Slice, rhs: Int) -> Slice {
