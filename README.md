@@ -106,15 +106,17 @@ The third goal is what you would expect from any HPC numeric library, the strate
 - [ ] Reduction Operations
 - [ ] Subscript Bound Checks
 - [ ] Fancy Indexing
-- [ ] 95+% Coverage
+- [ ] > 95% Coverage
 - [ ] Documentation
-##### 0.2: Numeric Optimization
-- [ ] Link BLAS and LAPACK
-- [ ] Specialize operators using BLAS and LAPACK
-- [ ] `dot` product, and others
-Initial 
-##### 0.3: Differentiable Programming
-- [ ] Differentiable conformance
+##### 0.2: Differentiable Programming
+This can actually be started at any point, although it wont be that useful until various operations like `dot` or reductions like `sum` or `mean` are implemented.
+- [ ] Conform `NDArray` to `Differentiable`
+- [ ] Make `NDArrays` operations differentiable.
+##### 0.3: Linear Algebra Optimization
+- [x] Link BLAS and LAPACK
+- [ ] Specialize operations using BLAS, LAPACK or [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w)
+- [ ] `dot` 
+- [ ] ... 
 
 ## Meta
 Cristian Garcia – cgarcia.e88@gmail.com
