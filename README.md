@@ -12,13 +12,13 @@ NDArray is a multidimensional array library written in Swift that aims to become
 
 Tutorial | Last Updated |
 -------- | ------------ |
-[Readme in Swift for Colab](https://colab.research.google.com/drive/1HZ58jllhtet1Ao9lD4RBb7d31o4h5EHm) | August 2019
+[Basic API](https://colab.research.google.com/drive/1aULWtrtj6WsNeJe_vBnr_hswy0JIYDt_) | August 2019 |
 
 
 ## Installation
 You can install it via SwiftPM via:
 ```swift
-.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.14")
+.package(url: "https://github.com/cgarciae/NDArray", from: "0.0.15")
 ```
 It might work on other compatible package managers. This package is only tested in Swift 5.1, compatibility with previous version is not guaranteed.
 
@@ -90,22 +90,25 @@ The second goal is what you would expect from a HPC numeric library and thanks t
 The third an obvious must have, Swift for TensorFlow's compiler with automatic differentiation is arguably the future of ML and we should use it.
 
 ## Roadmap
-##### 0.1
-- [x] Operators: `+`, `-`, `*`, `\`
+##### 0.1: Basic API
+- [x] Elementwise Operations
+- [ ] Reduction Operations
 - [x] Indexing
 - [x] Slicing
 - [x] Pretty Print
 - [x] Broadcasting
 - [x] Assignment
-- [ ] More operators
-- [ ] API + Codebase cleanup
+- [x] Operators: `+`, `-`, `*`, `\`
+- [ ] Subscript Bound Checks
+- [ ] Fancy Indexing
+- [ ] 95+% Coverage
 - [ ] Documentation
-##### 0.2
-- [x] Link BLAS and LAPACK
+##### 0.2: Numeric Optimization
+- [ ] Link BLAS and LAPACK
 - [ ] Specialize operators using BLAS and LAPACK
 - [ ] `dot` product, and others
 Initial 
-##### 0.3
+##### 0.3: Differentiable Programming
 - [ ] Differentiable conformance
 
 ## Meta
