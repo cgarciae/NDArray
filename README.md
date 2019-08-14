@@ -16,7 +16,7 @@ Tutorial | Last Updated |
 
 
 ## Installation
-You can install it via SwiftPM via:
+You can install it using SwiftPM:
 ```swift
 .package(url: "https://github.com/cgarciae/NDArray", from: "0.0.16")
 ```
