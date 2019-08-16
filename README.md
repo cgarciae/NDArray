@@ -5,8 +5,8 @@ NDArray is a multidimensional array library written in Swift that aims to become
 ## Goals
 
 1. Have an efficient multidimensional array interface with common things like indexing, slicing, broadcasting, etc. 
-2. Create specialized implementations of linear algebra operations for NDArrays containing numeric types using libraries like BLAS and LAPACK.
-3. Make `NDArray` and its operations `differentiable` so its usable along with Swift for TensorFlow.
+2. Make `NDArray` and its operations `differentiable` so its usable along with Swift for TensorFlow.
+3. Create specialized implementations of linear algebra operations for NDArrays containing numeric types using BLAS, LAPACK, Accelerate, or [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w) depending on the environment.
 
 ## Tutorials ![](https://www.tensorflow.org/images/colab_logo_32px.png)
 
@@ -16,7 +16,7 @@ Tutorial | Last Updated |
 
 
 ## Installation
-You can install it via SwiftPM via:
+You can install it using SwiftPM:
 ```swift
 .package(url: "https://github.com/cgarciae/NDArray", from: "0.0.16")
 ```
@@ -78,38 +78,45 @@ elementwiseInParallel(a, b) {
 In the future `NDArray` should be able to estimate the best strategy (serial/parallelized) based on the type and size of the data.
 
 ## Goals Discussion
-Each of NDArray's goals builds upon the previous and users should be able to opt-in for the features they need or can have access to in their environment.
+Except for the Basic API, NDArray's Automatic Differentiation and Linear Algebra Optimization capabilities should be opt-in so all users can have access to the library regardless of their environment, i.e. iOS developers should be able to use it even if they don't have access to TensorFlow's compiler or the Lineal Algebra infrastructure.
 
 #### Basic API
 The first goal is the definition of the library's basic API using pure Swift with no extra optimization or differentiable capabilities. iOS/OSX developers should be able to use the basic API without additional setup. It will also be important to keeping the NDArray's API in close coordination with Swift for TensorFlow's Tensor API to promote knowledge reuse and free documentation if possible.
 
-#### Linear Algebra Optimization
-The second goal is what you would expect from a HPC numeric library and thanks to Swift's capability of extending types and specializing functions it seems very plausible to implement this as an addon without loosing performance.
-
 #### Automatic Differentiation
-The third an obvious must have, Swift for TensorFlow's compiler with automatic differentiation is arguably the future of ML and we should use it.
+The second goal is an obvious must have, Swift for TensorFlow's compiler with automatic differentiation is arguably the future of ML and we should use it.
+
+#### Linear Algebra Optimization
+The third goal is what you would expect from any HPC numeric library, the strategy would be to specialize functions/operations for numeric types by using BLAS, LAPACK, Accelerate, or MLIR to speed computation. On the other hand, if successfully integrated with [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w), BLAS and LAPACK might not be necessary and NDArray could easily become one of the most performant numeric libraries out there.
+
 
 ## Roadmap
 ##### 0.1: Basic API
-- [x] Elementwise Operations
-- [ ] Reduction Operations
 - [x] Indexing
-- [x] Slicing
-- [x] Pretty Print
-- [x] Broadcasting
+- [x] Dimension Slicing
+- [x] Dimension Filtering by Indexes
+- [x] Dimension Masking
+- [x] SqueezeAxis
+- [x] NewAxis
 - [x] Assignment
-- [x] Operators: `+`, `-`, `*`, `\`
+- [x] Broadcasting
+- [x] Pretty Print
+- [x] Elementwise Operations
+- [x] Basic Operators: `+`, `-`, `*`, `\`
+- [ ] Reduction Operations
 - [ ] Subscript Bound Checks
 - [ ] Fancy Indexing
-- [ ] 95+% Coverage
+- [ ] > 95% Coverage
 - [ ] Documentation
-##### 0.2: Numeric Optimization
-- [ ] Link BLAS and LAPACK
-- [ ] Specialize operators using BLAS and LAPACK
-- [ ] `dot` product, and others
-Initial 
-##### 0.3: Differentiable Programming
-- [ ] Differentiable conformance
+##### 0.2: Differentiable Programming
+This can actually be started at any point, although it wont be that useful until various operations like `dot` or reductions like `sum` or `mean` are implemented.
+- [ ] Conform `NDArray` to `Differentiable`
+- [ ] Make `NDArrays` operations differentiable.
+##### 0.3: Linear Algebra Optimization
+- [x] Link BLAS and LAPACK
+- [ ] Specialize operations using BLAS, LAPACK, Accelerate, or [MLIR](https://docs.google.com/document/d/1UIPWl4lvBTozBD5OQ9SrxgcM7rA4pODMOjqQv3tm57w)
+- [ ] `dot` 
+- [ ] ... 
 
 ## Meta
 Cristian Garcia – cgarcia.e88@gmail.com
