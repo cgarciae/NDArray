@@ -1,8 +1,18 @@
 import NDArray
 
-let a = NDArray<Int>([1, 2, 3, 4, 5])
+let a = NDArray<Int>([
+    [1, 2],
+    [5, 6],
+])
 
-let b = a[((-1)...).stride(-1)]
+let b = NDArray<Int>([
+    [1, 10],
+    [100, 1000],
+])
+
+let c = elementwise(a, b) { $0 + $1 }
+
+print(c)
 
 // let a = NDArray<Int>([
 //     [1, 2, 3],

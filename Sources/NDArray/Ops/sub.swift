@@ -4,11 +4,11 @@ extension NDArray where Scalar: AdditiveArithmetic {
     }
 
     public static func - (lhs: Scalar, rhs: NDArray<Scalar>) -> NDArray<Scalar> {
-        elementwise(lhs, rhs, apply: -)
+        elementwise(rhs) { lhs - $0 }
     }
 
     public static func - (lhs: NDArray<Scalar>, rhs: Scalar) -> NDArray<Scalar> {
-        elementwise(lhs, rhs, apply: -)
+        elementwise(lhs) { $0 - rhs }
     }
 }
 

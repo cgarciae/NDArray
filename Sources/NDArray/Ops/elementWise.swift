@@ -198,44 +198,6 @@ public func elementwise<A, B, Z>(
 }
 
 @inlinable
-public func elementwise<A, B, Z>(
-    _ ndArrayA: NDArray<A>,
-    _ b: B,
-    apply f: (A, B) -> Z
-) -> NDArray<Z> {
-    elementwise(ndArrayA) { a in f(a, b) }
-}
-
-@inlinable
-public func elementwise<A, B, Z>(
-    _ ndArrayA: NDArray<A>,
-    _ b: B,
-    into ndArrayZ: inout NDArray<Z>,
-    apply f: (A, B) -> Z
-) {
-    elementwise(ndArrayA, into: &ndArrayZ) { a in f(a, b) }
-}
-
-@inlinable
-public func elementwise<A, B, Z>(
-    _ a: A,
-    _ ndArrayB: NDArray<B>,
-    apply f: (A, B) -> Z
-) -> NDArray<Z> {
-    elementwise(ndArrayB) { b in f(a, b) }
-}
-
-@inlinable
-public func elementwise<A, B, Z>(
-    _ a: A,
-    _ ndArrayB: NDArray<B>,
-    into ndArrayZ: inout NDArray<Z>,
-    apply f: (A, B) -> Z
-) {
-    elementwise(ndArrayB, into: &ndArrayZ) { b in f(a, b) }
-}
-
-@inlinable
 public func elementwiseInParallel<A, B, Z>(
     _ ndArrayA: NDArray<A>,
     _ ndArrayB: NDArray<B>,
