@@ -226,6 +226,20 @@ extension PartialRangeThrough: ArrayExpression where Bound == Int {
 public struct Slice: ArrayExpression {
     let start: Int?
     let end: Int?
+
+    internal init(start: Int? = nil, end: Int? = nil) {
+        self.start = start
+        self.end = end
+    }
+
+    public var arrayRange: ArrayRange {
+        .slice(start: start, end: end)
+    }
+}
+
+public struct StridedSlice : ArrayExpression {
+    let start: Int?
+    let end: Int?
     let stride: Int
 
     internal init(start: Int? = nil, end: Int? = nil, stride: Int = 1) {
@@ -269,36 +283,28 @@ public extension Int {
         Slice(start: lhs, end: rhs)
     }
 
-    static func .. (lhs: Slice, rhs: Int) -> Slice {
-        Slice(start: lhs.start, end: lhs.end, stride: rhs)
-    }
-
-    static func .. (lhs: Int, rhs: Slice) -> Slice {
-        Slice(start: lhs, end: rhs.start, stride: rhs.end!)
+    static func .. (lhs: Slice, rhs: Int) -> StridedSlice {
+        StridedSlice(start: lhs.start, end: lhs.end, stride: rhs)
     }
 
     static func ..- (lhs: Int, rhs: Int) -> Slice {
         Slice(start: lhs, end: -rhs)
     }
 
-    static func ..- (lhs: Slice, rhs: Int) -> Slice {
-        Slice(start: lhs.start, end: lhs.end, stride: -rhs)
+    static func ..- (lhs: Slice, rhs: Int) -> StridedSlice {
+        StridedSlice(start: lhs.start, end: lhs.end, stride: -rhs)
     }
 
-    static func ..- (lhs: Int, rhs: Slice) -> Slice {
-        Slice(start: lhs, end: -rhs.start!, stride: rhs.end!)
+    static prefix func .... (rhs: Int) -> StridedSlice {
+        StridedSlice(stride: rhs)
     }
 
-    static prefix func .... (rhs: Int) -> Slice {
-        Slice(stride: rhs)
+    static prefix func ....- (rhs: Int) -> StridedSlice {
+        StridedSlice(stride: -rhs)
     }
 
-    static prefix func ....- (rhs: Int) -> Slice {
-        Slice(stride: -rhs)
-    }
-
-    static func .... (lhs: Int, rhs: Int) -> Slice {
-        Slice(start: lhs, stride: rhs)
+    static func .... (lhs: Int, rhs: Int) -> StridedSlice {
+        StridedSlice(start: lhs, stride: rhs)
     }
 }
 
