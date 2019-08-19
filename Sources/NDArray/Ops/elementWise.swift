@@ -8,10 +8,10 @@ public let CPU_COUNT = ProcessInfo.processInfo.activeProcessorCount
 // 1
 //////////////////////////////////////////////////////////////////////////////////////////
 
-@inlinable public func getIndexer<Scalar>(_ ndarray: NDArray<Scalar>) -> ((Int, UnsafeMutableBufferPointer<Int>)) -> Int {
-    ndarray.arrayShape.isOriginalShape ?
-        { $0.0 } : { ndarray.arrayShape.linearIndex(of: $0.1) }
-}
+// @inlinable public func getIndexer<Scalar>(_ ndarray: NDArray<Scalar>) -> ((Int, UnsafeMutableBufferPointer<Int>)) -> Int {
+//     ndarray.arrayShape.isOriginalShape ?
+//         { $0.0 } : { ndarray.arrayShape.linearIndex(of: $0.1) }
+// }
 
 @inlinable
 public func elementwise<A, Z>(
@@ -21,28 +21,12 @@ public func elementwise<A, Z>(
 ) {
     let nElements = ndArrayA.shape.product()
 
-    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
-        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            let allOriginalShape = ndArrayA.arrayShape.isOriginalShape &&
-                ndArrayZ.arrayShape.isOriginalShape
+    ndArrayZ.withScalarSetter { zSetter in
+        ndArrayA.withScalarGetter { aGetter in
 
-            if allOriginalShape {
-                for i in 0 ..< nElements {
-                    arrayZ[i] = f(arrayA[i])
-                }
-            } else {
-                let indexerA = getIndexer(ndArrayA)
-                let indexerZ = getIndexer(ndArrayZ)
-
-                // let indexerZ: ((Int, UnsafeMutableBufferPointer<Int>)) -> Int = ndArrayZ.arrayShape.isOriginalShape ?
-                //     { $0.0 } : { ndArrayZ.arrayShape.linearIndex(of: $0.1) }
-
-                for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                    let aIndex = indexerA(index)
-                    let zIndex = indexerZ(index)
-
-                    arrayZ[zIndex] = f(arrayA[aIndex])
-                }
+            for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                let value = f(aGetter(index))
+                zSetter(index, value)
             }
         }
     }
@@ -76,26 +60,14 @@ public func elementwiseInParallel<A, Z>(
 ) {
     let nElements = ndArrayA.shape.product()
 
-    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
-        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            let allOriginalShape = ndArrayA.arrayShape.isOriginalShape &&
-                ndArrayZ.arrayShape.isOriginalShape
+    ndArrayZ.withScalarSetter { zSetter in
+        ndArrayA.withScalarGetter { aGetter in
 
-            if allOriginalShape {
-                parFor(0 ..< nElements) { [arrayZ] i in
-                    arrayZ[i] = f(arrayA[i])
-                }
-            } else {
-                let indexerA = getIndexer(ndArrayA)
-                let indexerZ = getIndexer(ndArrayZ)
-                let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
+            let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
 
-                parFor(0 ..< nElements, rangeMap: rangeMap) { [arrayZ] index in
-                    let aIndex = indexerA(index)
-                    let zIndex = indexerZ(index)
-
-                    arrayZ[zIndex] = f(arrayA[aIndex])
-                }
+            parFor(0 ..< nElements, rangeMap: rangeMap) { index in
+                let value = f(aGetter(index))
+                zSetter(index, value)
             }
         }
     }
@@ -141,29 +113,13 @@ public func elementwise<A, B, Z>(
 
     let nElements = ndArrayA.shape.product()
 
-    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
-        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
-                let allOriginalShape = ndArrayA.arrayShape.isOriginalShape &&
-                    ndArrayB.arrayShape.isOriginalShape &&
-                    ndArrayZ.arrayShape.isOriginalShape
+    ndArrayZ.withScalarSetter { zSetter in
+        ndArrayA.withScalarGetter { aGetter in
+            ndArrayB.withScalarGetter { bGetter in
 
-                if allOriginalShape {
-                    for i in 0 ..< nElements {
-                        arrayZ[i] = f(arrayA[i], arrayB[i])
-                    }
-                } else {
-                    let indexerA = getIndexer(ndArrayA)
-                    let indexerB = getIndexer(ndArrayB)
-                    let indexerZ = getIndexer(ndArrayZ)
-
-                    for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
-                        let aIndex = indexerA(index)
-                        let bIndex = indexerB(index)
-                        let zIndex = indexerZ(index)
-
-                        arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
-                    }
+                for index in indexSequence(range: 0 ..< nElements, shape: ndArrayA.shape) {
+                    let value = f(aGetter(index), bGetter(index))
+                    zSetter(index, value)
                 }
             }
         }
@@ -208,30 +164,16 @@ public func elementwiseInParallel<A, B, Z>(
     precondition(ndArrayA.shape == ndArrayB.shape)
     let nElements = ndArrayA.shape.product()
 
-    ndArrayZ.data.value.withUnsafeMutableBufferPointer { arrayZ in
-        ndArrayA.data.value.withUnsafeBufferPointer { arrayA in
-            ndArrayB.data.value.withUnsafeBufferPointer { arrayB in
-                let allOriginalShape = ndArrayA.arrayShape.isOriginalShape &&
-                    ndArrayB.arrayShape.isOriginalShape &&
-                    ndArrayZ.arrayShape.isOriginalShape
+    ndArrayZ.withScalarSetter { zSetter in
+        ndArrayA.withScalarGetter { aGetter in
+            ndArrayB.withScalarGetter { bGetter in
 
-                if allOriginalShape {
-                    parFor(0 ..< nElements) { [arrayZ] i in
-                        arrayZ[i] = f(arrayA[i], arrayB[i])
-                    }
-                } else {
-                    let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
-                    let indexerA = getIndexer(ndArrayA)
-                    let indexerB = getIndexer(ndArrayB)
-                    let indexerZ = getIndexer(ndArrayZ)
+                let rangeMap = { indexSequence(range: $0, shape: ndArrayA.shape) }
 
-                    parFor(0 ..< nElements, rangeMap: rangeMap) { [arrayZ] index in
-                        let aIndex = indexerA(index)
-                        let bIndex = indexerB(index)
-                        let zIndex = indexerZ(index)
+                parFor(0 ..< nElements, rangeMap: rangeMap) { index in
 
-                        arrayZ[zIndex] = f(arrayA[aIndex], arrayB[bIndex])
-                    }
+                    let value = f(aGetter(index), bGetter(index))
+                    zSetter(index, value)
                 }
             }
         }

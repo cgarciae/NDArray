@@ -6,17 +6,17 @@ extension NDArray: CustomStringConvertible {
 
         withScalarGetter { valueAt in
 
-            if shape.count == 0 {
-                s += "\(dataValue(at: [Int]()))" + ")"
-            } else if shape.count == 1 {
+            if self.shape.count == 0 {
+                s += "\(self.dataValue(at: [Int]()))" + ")"
+            } else if self.shape.count == 1 {
                 var arrayString = ""
-                for index in indexSequence(range: 0 ..< nElements, shape: shape) {
+                for index in indexSequence(range: 0 ..< nElements, shape: self.shape) {
                     let (i, _) = index
                     arrayString += "\(valueAt(index))" + (i + 1 != nElements ? ", " : "")
                 }
                 s += "[\(arrayString)])"
             } else {
-                let reversedShape = Array(shape.reversed())
+                let reversedShape = Array(self.shape.reversed())
                 let lastDim = reversedShape[0]
                 let secondLastDim = reversedShape[1]
 
@@ -24,7 +24,7 @@ extension NDArray: CustomStringConvertible {
 
                 var arrayString = ""
 
-                for index in indexSequence(range: 0 ..< nElements + 1, shape: shape) {
+                for index in indexSequence(range: 0 ..< nElements + 1, shape: self.shape) {
                     let (i, _) = index
 
                     if i % lastDim == 0, i > 0 {
@@ -40,7 +40,7 @@ extension NDArray: CustomStringConvertible {
                         arrayString += "\(valueAt(index))" + ((i + 1) % lastDim != 0 ? ", " : "")
                     }
                 }
-                s += String(repeating: "]", count: max(shape.count - 1, 1)) + ")"
+                s += String(repeating: "]", count: max(self.shape.count - 1, 1)) + ")"
             }
         }
 

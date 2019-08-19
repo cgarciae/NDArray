@@ -72,7 +72,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
     }
 
     @inlinable
-    public func withScalarGetter(_ body: (((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar) -> Void) {
+    public func withScalarGetter(_ body: (@escaping NDArray<Scalar>.ScalarGetter) -> Void) {
         data.value.withUnsafeBufferPointer { data in
 
             body { _, rectIndex in
@@ -83,8 +83,10 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
     }
 
     @inlinable
-    public func withScalarSetter(_ body: (((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void) -> Void) {
-        data.value.withUnsafeMutableBufferPointer { data in
+    public func withScalarSetter(_ body: (@escaping NDArray<Scalar>.ScalarSetter) -> Void) {
+        data.value.withUnsafeMutableBufferPointer { dataIn in
+            var data = dataIn
+            defer { dataIn = data }
 
             body { indexer, value in
                 let (_, rectangularIndex) = indexer
@@ -210,10 +212,41 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
             ndarray.withScalarGetter { ndarrayScalarGetter in
                 for index in indexSequence(range: 0 ..< nElements, shape: ndarrayView.shape) {
                     let value = ndarrayScalarGetter(index)
-
                     viewScalarSetter(index, value)
                 }
             }
         }
+    }
+
+    public func tiled(by repetitions: [Int]) -> NDArray<Scalar> {
+        var dimensions = arrayShape.dimensions
+
+        for i in 0 ..< dimensions.count {
+            if repetitions[i] > 1 {
+                dimensions[i] = dimensions[i].tiled(repetitions[i])
+            }
+        }
+
+        return NDArray(BaseNDArray(
+            data.value,
+            shape: ArrayShape(
+                dimensions,
+                linearMemoryOffset: arrayShape.linearMemoryOffset
+            )
+        ))
+    }
+
+    public func expandDimensions(axis: Int) -> NDArray<Scalar> {
+        var dimensions = arrayShape.dimensions
+
+        dimensions.insert(SingularDimension(), at: axis)
+
+        return NDArray(BaseNDArray(
+            data.value,
+            shape: ArrayShape(
+                dimensions,
+                linearMemoryOffset: arrayShape.linearMemoryOffset
+            )
+        ))
     }
 }
