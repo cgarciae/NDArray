@@ -1,84 +1,55 @@
 
 
-public final class Ref<A>: CustomStringConvertible {
-    @usableFromInline var value: A
+protocol NDArrayProtocol {
+    associatedtype Scalar
 
-    @usableFromInline init(_ value: A) {
-        self.value = value
-    }
+    typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
+    typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
 
-    public var description: String { "\(value)" }
+    var shape: [Int] { get }
+
+    func subscript_get(_: [ArrayRange]) -> NDArray<Scalar>
+    mutating func subscript_set(_: [ArrayRange], _: NDArray<Scalar>) -> Void
+    func linearIndex(at indexes: [Int]) -> Int
+    func dataValue(at indexes: [Int]) -> Scalar
+    func withScalarGetter(_: (ScalarGetter) -> Void)
+    func withScalarSetter(_: (ScalarSetter) -> Void)
 }
 
-public struct NDArray<Scalar> {
-    @usableFromInline internal var data: Ref<[Scalar]>
-    @usableFromInline internal var arrayShape: ArrayShape
+public struct NDArray<Scalar>: NDArrayProtocol {
+    let shape: [Int]
 
-    public var shape: [Int] { arrayShape.dimensionLengths }
+    typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
+    typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
 
-    @usableFromInline
-    internal init(_ data: Ref<[Scalar]>, shape: ArrayShape) {
-        self.data = data
-        arrayShape = shape
+    let _linearIndex: ([Int]) -> Int
+    let _dataValue: ([Int]) -> Scalar
+    let _subscript_get: ([ArrayRange]) -> NDArray<Scalar>
+    let _subscript_set: ([ArrayRange], NDArray<Scalar>) -> Void
+    let _withScalarGetter: ((ScalarGetter) -> Void) -> Void
+    let _withScalarSetter: ((ScalarSetter) -> Void) -> Void
+
+    func subscript_get(_ ranges: [ArrayRange]) -> NDArray<Scalar> {
+        _subscript_get(ranges)
     }
 
-    public init(_ data: [Any], shape: [Int]? = nil) {
-        let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
-
-        precondition(
-            calculatedShape.product() == flatData.count,
-            "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
-        )
-
-        if let shape = shape {
-            precondition(
-                shape.product() == flatData.count,
-                "Invalid shape, number of elements"
-            )
-        }
-
-        arrayShape = ArrayShape(shape ?? calculatedShape)
-        self.data = Ref(flatData)
+    func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) {
+        _subscript_set(ranges, value)
     }
 
-    @usableFromInline
-    internal init(_ data: [Scalar], shape: ArrayShape) {
-        arrayShape = shape
-        self.data = Ref(data)
+    func linearIndex(at indexes: [Int]) -> Int {
+        _linearIndex(indexes)
     }
 
-    public init(_ data: Scalar) {
-        arrayShape = ArrayShape([DimensionProtocol](), linearMemoryOffset: 0)
-        self.data = Ref([data])
+    func dataValue(at indexes: [Int]) -> Scalar {
+        _dataValue(indexes)
     }
 
-    @inlinable
-    public func linearIndex(at indexes: UnsafeMutableBufferPointer<Int>) -> Int {
-        arrayShape.linearIndex(of: indexes)
+    func withScalarGetter(_ body: (ScalarGetter) -> Void) {
+        _withScalarGetter(body)
     }
 
-    @inlinable
-    public func linearIndex(at indexes: [Int]) -> Int {
-        var indexes = indexes
-
-        return indexes.withUnsafeMutableBufferPointer { indexes in
-            linearIndex(at: indexes)
-        }
-    }
-
-    @inlinable
-    public func dataValue(at indexes: UnsafeMutableBufferPointer<Int>) -> Scalar {
-        return data.value[
-            arrayShape.linearIndex(of: indexes)
-        ]
-    }
-
-    @inlinable
-    public func dataValue(at indexes: [Int]) -> Scalar {
-        var indexes = indexes
-
-        return indexes.withUnsafeMutableBufferPointer { indexes in
-            dataValue(at: indexes)
-        }
+    func withScalarSetter(_ body: (ScalarSetter) -> Void) {
+        _withScalarSetter(body)
     }
 }
