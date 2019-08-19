@@ -175,15 +175,17 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
         }
 
         return NDArray(
-            data,
-            shape: ArrayShape(
-                dimensions,
-                linearMemoryOffset: linearMemoryOffset
+            BaseNDArray(
+                data,
+                shape: ArrayShape(
+                    dimensions,
+                    linearMemoryOffset: linearMemoryOffset
+                )
             )
         )
     }
 
-    func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) {
+    public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) {
         var ndarray = ndarray
 
         let allAreUnmodifiedlDimensions = arrayShape
@@ -192,7 +194,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
             .reduce(true) { $0 && $1 }
 
         if !isKnownUniquelyReferenced(&data) || !allAreUnmodifiedlDimensions {
-            let cp = copy()
+            let cp: BaseNDArray = copy()
             data = cp.data
             arrayShape = cp.arrayShape
         }

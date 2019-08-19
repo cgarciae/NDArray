@@ -1,6 +1,6 @@
 
 
-protocol NDArrayProtocol {
+public protocol NDArrayProtocol {
     associatedtype Scalar
 
     typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
@@ -14,13 +14,16 @@ protocol NDArrayProtocol {
     func dataValue(at indexes: [Int]) -> Scalar
     func withScalarGetter(_: (ScalarGetter) -> Void)
     func withScalarSetter(_: (ScalarSetter) -> Void)
+
+    // ops
+    func transposed(_ indexes: [Int]) -> NDArray<Scalar>
 }
 
 public struct NDArray<Scalar>: NDArrayProtocol {
-    let shape: [Int]
+    public let shape: [Int]
 
-    typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
-    typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
+    public typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
+    public typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
 
     let _linearIndex: ([Int]) -> Int
     let _dataValue: ([Int]) -> Scalar
@@ -29,27 +32,43 @@ public struct NDArray<Scalar>: NDArrayProtocol {
     let _withScalarGetter: ((ScalarGetter) -> Void) -> Void
     let _withScalarSetter: ((ScalarSetter) -> Void) -> Void
 
-    func subscript_get(_ ranges: [ArrayRange]) -> NDArray<Scalar> {
+    public init<N:NDArrayProtocol>(_ ndarray: N) where N.Scalar == Scalar {
+        var ndarray = ndarray
+
+        shape = ndarray.shape
+        _linearIndex = ndarray.linearIndex
+        _dataValue = ndarray.dataValue
+        _subscript_get = ndarray.subscript_get
+        _subscript_set = { ndarray.subscript_set($0, $1) }
+        _withScalarGetter = ndarray.withScalarGetter
+        _withScalarSetter = ndarray.withScalarSetter
+    }
+
+    init(_ ndarray: NDArray) {
+        self = ndarray
+    }
+
+    public func subscript_get(_ ranges: [ArrayRange]) -> NDArray<Scalar> {
         _subscript_get(ranges)
     }
 
-    func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) {
+    public func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) {
         _subscript_set(ranges, value)
     }
 
-    func linearIndex(at indexes: [Int]) -> Int {
+    public func linearIndex(at indexes: [Int]) -> Int {
         _linearIndex(indexes)
     }
 
-    func dataValue(at indexes: [Int]) -> Scalar {
+    public func dataValue(at indexes: [Int]) -> Scalar {
         _dataValue(indexes)
     }
 
-    func withScalarGetter(_ body: (ScalarGetter) -> Void) {
+    public func withScalarGetter(_ body: (ScalarGetter) -> Void) {
         _withScalarGetter(body)
     }
 
-    func withScalarSetter(_ body: (ScalarSetter) -> Void) {
+    public func withScalarSetter(_ body: (ScalarSetter) -> Void) {
         _withScalarSetter(body)
     }
 }
