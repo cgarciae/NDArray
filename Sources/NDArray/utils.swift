@@ -64,6 +64,14 @@ public func indexSequence(range: Range<Int>, shape: [Int]) -> AnySequence<(linea
     }
 }
 
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< $0 + size])
+        }
+    }
+}
+
 public func flattenArrays<A>(_ array: [Any]) -> (array: [A], shape: [Int]) {
     if array.count == 0 {
         return (

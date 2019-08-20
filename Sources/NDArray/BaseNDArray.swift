@@ -84,6 +84,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
 
     @inlinable
     public func withScalarSetter(_ body: (@escaping NDArray<Scalar>.ScalarSetter) -> Void) {
+        print("Before", data.value)
         data.value.withUnsafeMutableBufferPointer { dataIn in
             var data = dataIn
             defer { dataIn = data }
@@ -95,6 +96,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
                 data[index] = value
             }
         }
+        print("After", data.value)
     }
 
     @inlinable
@@ -248,5 +250,19 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
                 linearMemoryOffset: arrayShape.linearMemoryOffset
             )
         ))
+    }
+
+    public func scalarized() -> Scalar {
+        precondition(shape == [], "Cannot convert non-scalar NDArray to scalar, got shape \(shape)")
+
+        return data.value[0]
+    }
+
+    public mutating func copyInternals() {
+        if !isKnownUniquelyReferenced(&data) {
+            let cp: BaseNDArray = copy()
+            data = cp.data
+            arrayShape = cp.arrayShape
+        }
     }
 }
