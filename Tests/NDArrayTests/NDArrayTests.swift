@@ -359,6 +359,24 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(b.getBase().data.value, [2, 2, 2, 2])
     }
 
+    func testAssign5() {
+        var a = NDArray<Int>([1, 2, 3, 4], shape: [4])
+        var b = a
+        var c = b[1..-1]
+
+        a[0..] = [1, 1, 1, 1]
+        b[0..] = [2, 2, 2, 2]
+
+        var d = c[0..]
+
+        c[0..] = NDArray(10)
+
+        XCTAssertEqual(a.getBase().data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.getBase().data.value, [2, 2, 2, 2])
+        XCTAssertEqual(c.getBase().data.value, [10, 10])
+        XCTAssertEqual(d.getBase().data.value, [2, 3])
+    }
+
     func testTransposed() {
         let a = NDArray<Int>([
             [1, 2, 3],
@@ -525,6 +543,7 @@ final class NDArrayTests: XCTestCase {
         ("testAssign2", testAssign2),
         ("testAssign3", testAssign3),
         ("testAssign4", testAssign4),
+        ("testAssign5", testAssign5),
         ("testSqueezeAxis", testSqueezeAxis),
         ("testNewAxis", testNewAxis),
         ("testAll", testAll),
