@@ -2,7 +2,6 @@
 @usableFromInline
 internal func broadcast<A, B>(_ left: NDArray<A>, and right: NDArray<B>) -> (left: NDArray<A>, right: NDArray<B>) {
     if left.shape == right.shape {
-        print("recurrrr")
         return (
             left: left,
             right: right

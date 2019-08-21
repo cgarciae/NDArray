@@ -11,35 +11,35 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
         arrayShape = shape
     }
 
-    public init(_ data: [Any], shape: [Int]? = nil) {
-        let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
+    // public init(_ data: [Any], shape: [Int]? = nil) {
+    //     let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
 
-        precondition(
-            calculatedShape.product() == flatData.count,
-            "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
-        )
+    //     precondition(
+    //         calculatedShape.product() == flatData.count,
+    //         "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
+    //     )
 
-        if let shape = shape {
-            precondition(
-                shape.product() == flatData.count,
-                "Invalid shape, number of elements"
-            )
-        }
+    //     if let shape = shape {
+    //         precondition(
+    //             shape.product() == flatData.count,
+    //             "Invalid shape, number of elements"
+    //         )
+    //     }
 
-        arrayShape = ArrayShape(shape ?? calculatedShape)
-        self.data = Ref(flatData)
-    }
+    //     arrayShape = ArrayShape(shape ?? calculatedShape)
+    //     self.data = Ref(flatData)
+    // }
 
-    @usableFromInline
-    internal init(_ data: [Scalar], shape: ArrayShape) {
-        arrayShape = shape
-        self.data = Ref(data)
-    }
+    // @usableFromInline
+    // internal init(_ data: [Scalar], shape: ArrayShape) {
+    //     arrayShape = shape
+    //     self.data = Ref(data)
+    // }
 
-    public init(_ data: Scalar) {
-        arrayShape = ArrayShape([DimensionProtocol](), linearMemoryOffset: 0)
-        self.data = Ref([data])
-    }
+    // public init(_ data: Scalar) {
+    //     arrayShape = ArrayShape([DimensionProtocol](), linearMemoryOffset: 0)
+    //     self.data = Ref([data])
+    // }
 
     @inlinable
     public func linearIndex(at indexes: UnsafeMutableBufferPointer<Int>) -> Int {
@@ -84,11 +84,6 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
 
     @inlinable
     public mutating func withScalarSetter(_ body: (@escaping NDArray<Scalar>.ScalarSetter) -> Void) {
-        if isKnownUniquelyReferenced(&data) {
-            print("UNIQUE")
-        } else {
-            print("NOT UNIQUE")
-        }
         data.value.withUnsafeMutableBufferPointer { dataIn in
             var data = dataIn
             defer { dataIn = data }
@@ -195,23 +190,6 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
     public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) {
         var ndarray = ndarray
 
-        let allAreUnmodifiedlDimensions = arrayShape
-            .dimensions.lazy
-            .map { $0 is UnmodifiedDimension }
-            .reduce(true) { $0 && $1 }
-
-        if !isKnownUniquelyReferenced(&data) {
-            let cp: BaseNDArray = copy()
-            data = cp.data
-            arrayShape = cp.arrayShape
-        }
-
-        if !isKnownUniquelyReferenced(&data) {
-            print("AAA UNIQUE")
-        } else {
-            print("AAA NOT UNIQUE")
-        }
-
         var ndarrayView = subscript_get(ranges)
         let nElements = ndarrayView.shape.product()
 
@@ -241,7 +219,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
         }
 
         return NDArray(BaseNDArray(
-            data.value,
+            data,
             shape: ArrayShape(
                 dimensions,
                 linearMemoryOffset: arrayShape.linearMemoryOffset
@@ -255,7 +233,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
         dimensions.insert(SingularDimension(), at: axis)
 
         return NDArray(BaseNDArray(
-            data.value,
+            data,
             shape: ArrayShape(
                 dimensions,
                 linearMemoryOffset: arrayShape.linearMemoryOffset
@@ -266,14 +244,54 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
     public func scalarized() -> Scalar {
         precondition(shape == [], "Cannot convert non-scalar NDArray to scalar, got shape \(shape)")
 
-        return data.value[0]
+        return dataValue(at: [])
     }
 
-    public mutating func copyInternals() {
-        if !isKnownUniquelyReferenced(&data) {
-            let cp: BaseNDArray = copy()
-            data = cp.data
-            arrayShape = cp.arrayShape
+    // public mutating func copyInternals() {
+    //     if !isKnownUniquelyReferenced(&data) {
+    //         let cp: BaseNDArray = copy()
+    //         data = cp.data
+    //         arrayShape = cp.arrayShape
+    //     }
+    // }
+
+    public func copy() -> BaseNDArray<Scalar> {
+        let nElements = shape.product()
+
+        let arrayC = [Scalar](unsafeUninitializedCapacity: nElements) { arrayC, count in
+            count = nElements
+
+            self.withScalarGetter { arrayAScalarGetter in
+                for index in indexSequence(range: 0 ..< nElements, shape: shape) {
+                    arrayC[index.linearIndex] = arrayAScalarGetter(index)
+                }
+            }
         }
+
+        return BaseNDArray(
+            Ref(arrayC),
+            shape: ArrayShape(shape)
+        )
+    }
+}
+
+extension NDArrayProtocol {
+    internal func getBase() -> BaseNDArray<Scalar> {
+        let nElements = shape.product()
+
+        let arrayC = [Scalar](unsafeUninitializedCapacity: nElements) { arrayC, count in
+            count = nElements
+
+            self.withScalarGetter { arrayAScalarGetter in
+                for index in indexSequence(range: 0 ..< nElements, shape: shape) {
+                    arrayC[index.linearIndex] = arrayAScalarGetter(index)
+                }
+            }
+        }
+
+        return BaseNDArray(
+            Ref(arrayC),
+            shape: ArrayShape(shape)
+        )
     }
 }

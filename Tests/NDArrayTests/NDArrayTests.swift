@@ -159,7 +159,6 @@ final class NDArrayTests: XCTestCase {
         )
 
         let c = a + b
-        // print(c)
 
         XCTAssertEqual(a.shape, [2, 2, 3])
         XCTAssertEqual(b.shape, [2, 2, 3])
@@ -272,8 +271,8 @@ final class NDArrayTests: XCTestCase {
 
         let d = b + c
 
-        XCTAssertEqual(b.copy().data.value, [20])
-        XCTAssertEqual(c.copy().data.value, [1])
+        XCTAssertEqual(b.getBase().data.value, [20])
+        XCTAssertEqual(c.getBase().data.value, [1])
         XCTAssertEqual(d.toArray([Int].self), [21])
     }
 
@@ -281,12 +280,7 @@ final class NDArrayTests: XCTestCase {
         let a = NDArray<Int>([1, 2, 3, 4], shape: [1, 4])
         let b = NDArray<Int>([1, 2, 3, 4], shape: [4, 1])
 
-        print(a)
-        print(b)
-
         let c = a + b
-
-        print(c)
 
         let target = NDArray<Int>([
             [2, 3, 4, 5],
@@ -295,7 +289,7 @@ final class NDArrayTests: XCTestCase {
             [5, 6, 7, 8],
         ])
 
-        XCTAssertEqual(c.copy().data.value, target.copy().data.value)
+        XCTAssertEqual(c.getBase().data.value, target.getBase().data.value)
     }
 
     func testBroadcast2() {
@@ -308,7 +302,7 @@ final class NDArrayTests: XCTestCase {
             2, 3, 4, 5,
         ])
 
-        XCTAssertEqual(c.copy().data.value, target.copy().data.value)
+        XCTAssertEqual(c.getBase().data.value, target.getBase().data.value)
     }
 
     func testBroadcast3() {
@@ -321,7 +315,7 @@ final class NDArrayTests: XCTestCase {
             2, 4, 6, 8,
         ])
 
-        XCTAssertEqual(c.copy().data.value, target.copy().data.value)
+        XCTAssertEqual(c.getBase().data.value, target.getBase().data.value)
     }
 
     func testAssign() {
@@ -331,8 +325,8 @@ final class NDArrayTests: XCTestCase {
         a[0..] = NDArray<Int>([1, 1, 1, 1])
         b[0..] = NDArray<Int>([2, 2, 2, 2])
 
-        XCTAssertEqual(a.copy().data.value, [1, 1, 1, 1])
-        XCTAssertEqual(b.copy().data.value, [2, 2, 2, 2])
+        XCTAssertEqual(a.getBase().data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.getBase().data.value, [2, 2, 2, 2])
     }
 
     func testAssign2() {
@@ -342,8 +336,8 @@ final class NDArrayTests: XCTestCase {
         a[0..] = NDArray(1)
         b[0..] = NDArray(2)
 
-        XCTAssertEqual(a.copy().data.value, [1, 1, 1, 1])
-        XCTAssertEqual(b.copy().data.value, [2, 2, 2, 2])
+        XCTAssertEqual(a.getBase().data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.getBase().data.value, [2, 2, 2, 2])
     }
 
     func testAssign3() {
@@ -353,8 +347,8 @@ final class NDArrayTests: XCTestCase {
         a[0..] = NDArray(1)
         b[0..] = NDArray(2)
 
-        XCTAssertEqual(a.copy().data.value, [1, 1, 1, 1])
-        XCTAssertEqual(b.copy().data.value, [2, 2, 2, 2])
+        XCTAssertEqual(a.getBase().data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.getBase().data.value, [2, 2, 2, 2])
     }
 
     func testAssign4() {
@@ -364,8 +358,8 @@ final class NDArrayTests: XCTestCase {
         a[0..] = [1, 1, 1, 1]
         b[0..] = [2, 2, 2, 2]
 
-        XCTAssertEqual(a.copy().data.value, [1, 1, 1, 1])
-        XCTAssertEqual(b.copy().data.value, [2, 2, 2, 2])
+        XCTAssertEqual(a.getBase().data.value, [1, 1, 1, 1])
+        XCTAssertEqual(b.getBase().data.value, [2, 2, 2, 2])
     }
 
     func testTransposed() {
@@ -374,7 +368,7 @@ final class NDArrayTests: XCTestCase {
             [4, 5, 6],
         ]).transposed([1, 0])
 
-        XCTAssertEqual(a.copy().data.value, [1, 4, 2, 5, 3, 6])
+        XCTAssertEqual(a.getBase().data.value, [1, 4, 2, 5, 3, 6])
     }
 
     func testRangesSplit() {
@@ -411,7 +405,7 @@ final class NDArrayTests: XCTestCase {
         ])
         let b = a[ArrayRange.all, 1]
 
-        XCTAssertEqual(b.copy().data.value, [2, 3])
+        XCTAssertEqual(b.getBase().data.value, [2, 3])
     }
 
     func testEllipsis() {
@@ -469,7 +463,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[((-1)...).stride(-1)]
 
-        XCTAssertEqual(a.copy().data.value, b.copy().data.value.reversed())
+        XCTAssertEqual(a.getBase().data.value, b.getBase().data.value.reversed())
     }
 
     func testNegativeStride2() {
@@ -477,7 +471,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[....-1]
 
-        XCTAssertEqual(a.copy().data.value, b.copy().data.value.reversed())
+        XCTAssertEqual(a.getBase().data.value, b.getBase().data.value.reversed())
     }
 
     func testNegativeStride3() {
@@ -485,7 +479,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[..1..-2]
 
-        XCTAssertEqual(b.copy().data.value, [5, 3])
+        XCTAssertEqual(b.getBase().data.value, [5, 3])
     }
 
     func testNegativeIndex() {
@@ -493,7 +487,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[-1]
 
-        XCTAssertEqual(b.copy().data.value, [5])
+        XCTAssertEqual(b.getBase().data.value, [5])
     }
 
     func testFilter() {
@@ -501,7 +495,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[[1, 1, 0, 2, -1]]
 
-        XCTAssertEqual(b.copy().data.value, [2, 2, 1, 3, 5])
+        XCTAssertEqual(b.getBase().data.value, [2, 2, 1, 3, 5])
     }
 
     func testFilter2() {
@@ -509,7 +503,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[[true, true, false, false, true]]
 
-        XCTAssertEqual(b.copy().data.value, [1, 2, 5])
+        XCTAssertEqual(b.getBase().data.value, [1, 2, 5])
     }
 
     static var allTests = [

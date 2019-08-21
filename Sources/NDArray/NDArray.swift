@@ -33,12 +33,13 @@ public protocol NDArrayProtocol {
     func toArray<T: MultiArray>(_: T.Type) -> T
 
     //
-    mutating func copyInternals() -> Void
+    // mutating func copyInternals() -> Void
+    func copy() -> Self
 }
 
 extension NDArrayProtocol {
     public func toArray<T: MultiArray>(_: T.Type) -> T {
-        let cp: BaseNDArray = copy()
+        let cp: BaseNDArray = getBase()
         var array: [Any] = cp.data.value
 
         for n in cp.shape.reversed().dropLast() {
@@ -62,27 +63,54 @@ public struct NDArray<Scalar>: NDArrayProtocol {
         anyNDArray = AnyNDArray(ndarray)
     }
 
+    internal init(_ anyNDArray: AnyNDArray<Scalar>) {
+        shape = anyNDArray.shape
+        self.anyNDArray = anyNDArray
+    }
+
     init(_ ndarray: NDArray) {
         self = ndarray
     }
 
     public init(_ data: [Any], shape: [Int]? = nil) {
-        self.init(BaseNDArray(data, shape: shape))
-    }
+        let (flatData, calculatedShape): ([Scalar], [Int]) = flattenArrays(data)
 
-    internal init(_ data: [Scalar], shape: ArrayShape) {
-        self.init(BaseNDArray(data, shape: shape))
+        precondition(
+            calculatedShape.product() == flatData.count,
+            "All sub-arrays in data must have equal length. Calculated shape: \(calculatedShape), \(flatData)"
+        )
+
+        if let shape = shape {
+            precondition(
+                shape.product() == flatData.count,
+                "Invalid shape, number of elements"
+            )
+        }
+
+        let data = Ref(flatData)
+        let arrayShape = ArrayShape(shape ?? calculatedShape)
+
+        self = NDArray(BaseNDArray(data, shape: arrayShape))
     }
 
     public init(_ data: Scalar) {
-        self.init(BaseNDArray(data))
+        self = NDArray(BaseNDArray(
+            Ref([data]),
+            shape: ArrayShape(
+                [DimensionProtocol](),
+                linearMemoryOffset: 0
+            )
+        ))
     }
 
     public func subscript_get(_ ranges: [ArrayRange]) -> NDArray<Scalar> {
         anyNDArray._subscript_get(ranges)
     }
 
-    public func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) {
+    public mutating func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) {
+        if !isKnownUniquelyReferenced(&anyNDArray) {
+            anyNDArray = anyNDArray._copy()
+        }
         anyNDArray._subscript_set(ranges, value)
     }
 
@@ -98,7 +126,7 @@ public struct NDArray<Scalar>: NDArrayProtocol {
         anyNDArray._withScalarGetter(body)
     }
 
-    public func withScalarSetter(_ body: (@escaping ScalarSetter) -> Void) {
+    public mutating func withScalarSetter(_ body: (@escaping ScalarSetter) -> Void) {
         anyNDArray._withScalarSetter(body)
     }
 
@@ -118,8 +146,12 @@ public struct NDArray<Scalar>: NDArrayProtocol {
         anyNDArray._scalarized()
     }
 
-    public mutating func copyInternals() {
-        anyNDArray._copyInternals()
+    // public mutating func copyInternals() {
+    //     anyNDArray._copyInternals()
+    // }
+
+    public func copy() -> NDArray<Scalar> {
+        NDArray(anyNDArray._copy())
     }
 }
 
@@ -139,7 +171,8 @@ public class AnyNDArray<Scalar> {
     let _tiled: ([Int]) -> NDArray<Scalar>
     let _expandDimensions: (Int) -> NDArray<Scalar>
     let _scalarized: () -> Scalar
-    let _copyInternals: () -> Void
+    // let _copyInternals: () -> Void
+    let _copy: () -> AnyNDArray<Scalar>
 
     public init<N: NDArrayProtocol>(_ ndarray: N) where N.Scalar == Scalar {
         var ndarray = ndarray
@@ -157,22 +190,23 @@ public class AnyNDArray<Scalar> {
         _tiled = { ndarray.tiled(by: $0) }
         _expandDimensions = { ndarray.expandDimensions(axis: $0) }
         _scalarized = { ndarray.scalarized() }
-        _copyInternals = { ndarray.copyInternals() }
+        // _copyInternals = { ndarray.copyInternals() }
+        _copy = { AnyNDArray(ndarray.copy()) }
     }
 
     // init(_ ndarray: AnyNDArray) {
     //     self = ndarray
     // }
 
-    public convenience init(_ data: [Any], shape: [Int]? = nil) {
-        self.init(BaseNDArray(data, shape: shape))
-    }
+    // public convenience init(_ data: [Any], shape: [Int]? = nil) {
+    //     self.init(BaseNDArray(data, shape: shape))
+    // }
 
-    internal convenience init(_ data: [Scalar], shape: ArrayShape) {
-        self.init(BaseNDArray(data, shape: shape))
-    }
+    // internal convenience init(_ data: [Scalar], shape: ArrayShape) {
+    //     self.init(BaseNDArray(data, shape: shape))
+    // }
 
-    public convenience init(_ data: Scalar) {
-        self.init(BaseNDArray(data))
-    }
+    // public convenience init(_ data: Scalar) {
+    //     self.init(BaseNDArray(data))
+    // }
 }
