@@ -1,25 +1,75 @@
+public protocol MultiArray {
+    associatedtype Element
 
-
-public final class Ref<A>: CustomStringConvertible {
-    @usableFromInline var value: A
-
-    @usableFromInline init(_ value: A) {
-        self.value = value
-    }
-
-    public var description: String { "\(value)" }
+    var array: [Element] { get }
 }
 
-public struct NDArray<Scalar> {
-    @usableFromInline internal var data: Ref<[Scalar]>
-    @usableFromInline internal var arrayShape: ArrayShape
+extension Array : MultiArray {
+    public var array: [Element] { self }
+}
 
-    public var shape: [Int] { arrayShape.dimensionLengths }
+public protocol NDArrayProtocol {
+    associatedtype Scalar
 
-    @usableFromInline
-    internal init(_ data: Ref<[Scalar]>, shape: ArrayShape) {
-        self.data = data
-        arrayShape = shape
+    typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
+    typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
+
+    var shape: [Int] { get }
+
+    func subscript_get(_: [ArrayRange]) -> NDArray<Scalar>
+    mutating func subscript_set(_: [ArrayRange], _: NDArray<Scalar>) -> NDArray<Scalar>
+    func linearIndex(at indexes: [Int]) -> Int
+    func dataValue(at indexes: [Int]) -> Scalar
+    func withScalarGetter(_: (@escaping ScalarGetter) -> Void)
+    mutating func withScalarSetter(_: (@escaping ScalarSetter) -> Void)
+
+    // ops
+    func transposed(_: [Int]) -> NDArray<Scalar>
+    func tiled(by: [Int]) -> NDArray<Scalar>
+    func expandDimensions(axis: Int) -> NDArray<Scalar>
+    func scalarized() -> Scalar
+
+    //
+    func toArray<T: MultiArray>(_: T.Type) -> T
+
+    //
+    // mutating func copyInternals() -> Void
+    func copy() -> NDArray<Scalar>
+}
+
+extension NDArrayProtocol {
+    public func toArray<T: MultiArray>(_: T.Type) -> T {
+        let cp: BaseNDArray = baseCopy()
+        var array: [Any] = cp.data.value
+
+        for n in cp.shape.reversed().dropLast() {
+            array = array.chunked(into: n) as [Any]
+        }
+
+        return array as! T
+    }
+}
+
+public struct NDArray<Scalar>: NDArrayProtocol {
+    public let shape: [Int]
+
+    public typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
+    public typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
+
+    public var anyNDArray: AnyNDArray<Scalar>
+
+    public init<N:NDArrayProtocol>(_ ndarray: N) where N.Scalar == Scalar {
+        shape = ndarray.shape
+        anyNDArray = AnyNDArray(ndarray)
+    }
+
+    internal init(_ anyNDArray: AnyNDArray<Scalar>) {
+        shape = anyNDArray.shape
+        self.anyNDArray = anyNDArray
+    }
+
+    init(_ ndarray: NDArray) {
+        self = ndarray
     }
 
     public init(_ data: [Any], shape: [Int]? = nil) {
@@ -37,48 +87,101 @@ public struct NDArray<Scalar> {
             )
         }
 
-        arrayShape = ArrayShape(shape ?? calculatedShape)
-        self.data = Ref(flatData)
-    }
+        let data = Ref(flatData)
+        let arrayShape = ArrayShape(shape ?? calculatedShape)
 
-    @usableFromInline
-    internal init(_ data: [Scalar], shape: ArrayShape) {
-        arrayShape = shape
-        self.data = Ref(data)
+        self = NDArray(BaseNDArray(data, shape: arrayShape))
     }
 
     public init(_ data: Scalar) {
-        arrayShape = ArrayShape([DimensionProtocol](), linearMemoryOffset: 0)
-        self.data = Ref([data])
+        self = NDArray(ScalarNDArray(
+            data,
+            shape: []
+        ))
     }
 
-    @inlinable
-    public func linearIndex(at indexes: UnsafeMutableBufferPointer<Int>) -> Int {
-        arrayShape.linearIndex(of: indexes)
+    public func subscript_get(_ ranges: [ArrayRange]) -> NDArray<Scalar> {
+        anyNDArray.subscript_get(ranges)
     }
 
-    @inlinable
+    public mutating func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) -> NDArray<Scalar> {
+        if !isKnownUniquelyReferenced(&anyNDArray) {
+            self = anyNDArray.copy()
+        }
+
+        self = anyNDArray.subscript_set(ranges, value)
+
+        return self
+    }
+
     public func linearIndex(at indexes: [Int]) -> Int {
-        var indexes = indexes
-
-        return indexes.withUnsafeMutableBufferPointer { indexes in
-            linearIndex(at: indexes)
-        }
+        anyNDArray.linearIndex(indexes)
     }
 
-    @inlinable
-    public func dataValue(at indexes: UnsafeMutableBufferPointer<Int>) -> Scalar {
-        return data.value[
-            arrayShape.linearIndex(of: indexes)
-        ]
-    }
-
-    @inlinable
     public func dataValue(at indexes: [Int]) -> Scalar {
-        var indexes = indexes
+        anyNDArray.dataValue(indexes)
+    }
 
-        return indexes.withUnsafeMutableBufferPointer { indexes in
-            dataValue(at: indexes)
+    public func withScalarGetter(_ body: (@escaping ScalarGetter) -> Void) {
+        anyNDArray.withScalarGetter(body)
+    }
+
+    public mutating func withScalarSetter(_ body: (@escaping ScalarSetter) -> Void) {
+        anyNDArray.withScalarSetter(body)
+    }
+
+    public func transposed(_ permutations: [Int]) -> NDArray<Scalar> {
+        anyNDArray.transposed(permutations)
+    }
+
+    public func tiled(by amounts: [Int]) -> NDArray<Scalar> {
+        anyNDArray.tiled(amounts)
+    }
+
+    public func expandDimensions(axis: Int) -> NDArray<Scalar> {
+        anyNDArray.expandDimensions(axis)
+    }
+
+    public func scalarized() -> Scalar {
+        anyNDArray.scalarized()
+    }
+
+    public func copy() -> NDArray<Scalar> {
+        NDArray(anyNDArray.copy())
+    }
+}
+
+public class AnyNDArray<Scalar> {
+    public let shape: [Int]
+
+    let linearIndex: ([Int]) -> Int
+    let dataValue: ([Int]) -> Scalar
+    let subscript_get: ([ArrayRange]) -> NDArray<Scalar>
+    let subscript_set: ([ArrayRange], NDArray<Scalar>) -> NDArray<Scalar>
+    let withScalarGetter: ((@escaping NDArray<Scalar>.ScalarGetter) -> Void) -> Void
+    let withScalarSetter: ((@escaping NDArray<Scalar>.ScalarSetter) -> Void) -> Void
+    let transposed: ([Int]) -> NDArray<Scalar>
+    let tiled: ([Int]) -> NDArray<Scalar>
+    let expandDimensions: (Int) -> NDArray<Scalar>
+    let scalarized: () -> Scalar
+    let copy: () -> NDArray<Scalar>
+
+    public init<N: NDArrayProtocol>(_ ndarray: N) where N.Scalar == Scalar {
+        var ndarray = ndarray
+
+        shape = ndarray.shape
+        linearIndex = { ndarray.linearIndex(at: $0) }
+        dataValue = { ndarray.dataValue(at: $0) }
+        subscript_get = { ndarray.subscript_get($0) }
+        subscript_set = {
+            ndarray.subscript_set($0, $1)
         }
+        withScalarGetter = { ndarray.withScalarGetter($0) }
+        withScalarSetter = { ndarray.withScalarSetter($0) }
+        transposed = { ndarray.transposed($0) }
+        tiled = { ndarray.tiled(by: $0) }
+        expandDimensions = { ndarray.expandDimensions(axis: $0) }
+        scalarized = { ndarray.scalarized() }
+        copy = { ndarray.copy() }
     }
 }

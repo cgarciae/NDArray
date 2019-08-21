@@ -7,7 +7,8 @@
 
 @frozen
 public struct _NDArrayElementLiteral<Scalar> {
-    @usableFromInline let ndarray: NDArray<Scalar>
+    @usableFromInline let array: [Scalar]
+    @usableFromInline let shape: [Int]
 }
 
 extension _NDArrayElementLiteral: ExpressibleByBooleanLiteral
@@ -15,7 +16,8 @@ extension _NDArrayElementLiteral: ExpressibleByBooleanLiteral
     public typealias BooleanLiteralType = Scalar.BooleanLiteralType
     @inlinable
     public init(booleanLiteral: BooleanLiteralType) {
-        ndarray = NDArray(Scalar(booleanLiteral: booleanLiteral))
+        array = [Scalar(booleanLiteral: booleanLiteral)]
+        shape = []
     }
 }
 
@@ -24,7 +26,8 @@ extension _NDArrayElementLiteral: ExpressibleByIntegerLiteral
     public typealias IntegerLiteralType = Scalar.IntegerLiteralType
     @inlinable
     public init(integerLiteral: IntegerLiteralType) {
-        ndarray = NDArray(Scalar(integerLiteral: integerLiteral))
+        array = [Scalar(integerLiteral: integerLiteral)]
+        shape = []
     }
 }
 
@@ -33,7 +36,8 @@ extension _NDArrayElementLiteral: ExpressibleByFloatLiteral
     public typealias FloatLiteralType = Scalar.FloatLiteralType
     @inlinable
     public init(floatLiteral: FloatLiteralType) {
-        ndarray = NDArray(Scalar(floatLiteral: floatLiteral))
+        array = [Scalar(floatLiteral: floatLiteral)]
+        shape = []
     }
 }
 
@@ -41,12 +45,10 @@ extension _NDArrayElementLiteral: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = _NDArrayElementLiteral<Scalar>
     @inlinable
     public init(arrayLiteral elements: _NDArrayElementLiteral<Scalar>...) {
-        let data_array = elements.reduce([Scalar]()) { array, element in
-            array + element.ndarray.data.value
+        array = elements.reduce([Scalar]()) { array, element in
+            array + element.array
         }
-        let shape = [elements.count] + elements[0].ndarray.shape
-
-        ndarray = NDArray(data_array, shape: shape)
+        shape = [elements.count] + elements[0].shape
     }
 }
 
@@ -59,12 +61,12 @@ extension NDArray: ExpressibleByArrayLiteral {
     ///   separate method because `ShapedArray` initializers need to call it.
     @inlinable
     internal init(_tensorElementLiterals elements: [_NDArrayElementLiteral<Scalar>]) {
-        let data_array = elements.reduce([Scalar]()) { array, element in
-            array + element.ndarray.data.value
+        let array = elements.reduce([Scalar]()) { array, element in
+            array + element.array
         }
-        let shape = [elements.count] + elements[0].ndarray.shape
+        let shape = [elements.count] + elements[0].shape
 
-        self = NDArray(data_array, shape: shape)
+        self = NDArray(array, shape: shape)
     }
 
     /// Creates a ndarray initialized with the given elements.
