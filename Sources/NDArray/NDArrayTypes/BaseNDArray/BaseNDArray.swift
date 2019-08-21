@@ -1,12 +1,12 @@
 
 public struct BaseNDArray<Scalar> :NDArrayProtocol {
-    @usableFromInline internal var data: Ref<[Scalar]>
-    @usableFromInline internal var arrayShape: ArrayShape
+    public var data: Ref<[Scalar]>
+    public var arrayShape: ArrayShape
 
     public var shape: [Int] { arrayShape.dimensionLengths }
 
-    @usableFromInline
-    internal init(_ data: Ref<[Scalar]>, shape: ArrayShape) {
+    @inlinable
+    public init(_ data: Ref<[Scalar]>, shape: ArrayShape) {
         self.data = data
         arrayShape = shape
     }
@@ -176,15 +176,22 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
             dimensions.insert(dimension, at: i)
         }
 
-        return NDArray(
-            BaseNDArray(
-                data,
-                shape: ArrayShape(
-                    dimensions,
-                    linearMemoryOffset: linearMemoryOffset
-                )
+        let ndarray = BaseNDArray(
+            data,
+            shape: ArrayShape(
+                dimensions,
+                linearMemoryOffset: linearMemoryOffset
             )
         )
+
+        if ndarray.shape.isEmpty {
+            return NDArray(ScalarNDArray(
+                ndarray.scalarized(),
+                shape: []
+            ))
+        } else {
+            return NDArray(ndarray)
+        }
     }
 
     public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) {
@@ -271,6 +278,18 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
         return NDArray(BaseNDArray(
             Ref(arrayC),
             shape: ArrayShape(shape)
+        ))
+    }
+
+    public func transposed(_ indexes: [Int]) -> NDArray<Scalar> {
+        precondition(shape.count >= indexes.count)
+
+        return NDArray(BaseNDArray(
+            data,
+            shape: ArrayShape(
+                indexes.map { i in arrayShape.dimensions[i] },
+                linearMemoryOffset: arrayShape.linearMemoryOffset
+            )
         ))
     }
 }

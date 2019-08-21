@@ -94,12 +94,9 @@ public struct NDArray<Scalar>: NDArrayProtocol {
     }
 
     public init(_ data: Scalar) {
-        self = NDArray(BaseNDArray(
-            Ref([data]),
-            shape: ArrayShape(
-                [DimensionProtocol](),
-                linearMemoryOffset: 0
-            )
+        self = NDArray(ScalarNDArray(
+            data,
+            shape: []
         ))
     }
 

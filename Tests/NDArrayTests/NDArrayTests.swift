@@ -251,10 +251,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[1, 1]
 
-        let linearIndex = b.linearIndex(at: [])
-
         XCTAssertEqual(b.shape, [])
-        XCTAssertEqual(linearIndex, 3)
         XCTAssertEqual(b.scalarized(), 20)
     }
 

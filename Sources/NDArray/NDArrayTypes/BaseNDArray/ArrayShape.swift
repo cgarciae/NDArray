@@ -1,13 +1,14 @@
 
 
-@usableFromInline internal struct ArrayShape {
+public struct ArrayShape {
     @usableFromInline let dimensions: [DimensionProtocol]
     @usableFromInline let linearMemoryOffset: Int
     @usableFromInline let dimensionLengths: [Int]
     @usableFromInline let dimensionStrides: [Int]
     @usableFromInline let isOriginalShape: Bool
 
-    @usableFromInline init(_ shape: [Int]) {
+    @inlinable
+    public init(_ shape: [Int]) {
         let dimensionStrides = getDimensionStrides(of: shape)
         self.dimensionStrides = dimensionStrides
 
