@@ -39,7 +39,7 @@ public protocol NDArrayProtocol {
 
 extension NDArrayProtocol {
     public func toArray<T: MultiArray>(_: T.Type) -> T {
-        let cp: BaseNDArray = getBase()
+        let cp: BaseNDArray = baseCopy()
         var array: [Any] = cp.data.value
 
         for n in cp.shape.reversed().dropLast() {

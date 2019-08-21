@@ -198,7 +198,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
         var ndarray = ndarray
 
         if !isKnownUniquelyReferenced(&data) {
-            self = getBase()
+            self = baseCopy()
         }
 
         var ndarrayView = subscript_get(ranges)
@@ -301,7 +301,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
 }
 
 extension NDArrayProtocol {
-    internal func getBase() -> BaseNDArray<Scalar> {
+    internal func baseCopy() -> BaseNDArray<Scalar> {
         let nElements = shape.product()
 
         let arrayC = [Scalar](unsafeUninitializedCapacity: nElements) { arrayC, count in

@@ -81,7 +81,7 @@ public struct ScalarNDArray<Scalar>: NDArrayProtocol {
             return NDArray(self)
         }
 
-        var ndarrayBase = ndarrayView.getBase()
+        var ndarrayBase = ndarrayView.baseCopy()
 
         return ndarrayBase.subscript_set(
             [.all],
@@ -145,7 +145,7 @@ public struct ScalarNDArray<Scalar>: NDArrayProtocol {
         if shape.isEmpty {
             return NDArray(ScalarNDArray(data, shape: shape))
         } else {
-            return NDArray(getBase())
+            return NDArray(baseCopy())
         }
     }
 }
