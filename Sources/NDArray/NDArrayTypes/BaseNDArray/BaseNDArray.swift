@@ -197,6 +197,10 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
     public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) -> NDArray<Scalar> {
         var ndarray = ndarray
 
+        if !isKnownUniquelyReferenced(&data) {
+            self = getBase()
+        }
+
         var ndarrayView = subscript_get(ranges)
         let nElements = ndarrayView.shape.product()
 
