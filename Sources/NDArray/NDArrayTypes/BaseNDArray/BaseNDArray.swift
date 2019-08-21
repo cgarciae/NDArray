@@ -255,7 +255,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
     //     }
     // }
 
-    public func copy() -> BaseNDArray<Scalar> {
+    public func copy() -> NDArray<Scalar> {
         let nElements = shape.product()
 
         let arrayC = [Scalar](unsafeUninitializedCapacity: nElements) { arrayC, count in
@@ -268,10 +268,10 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
             }
         }
 
-        return BaseNDArray(
+        return NDArray(BaseNDArray(
             Ref(arrayC),
             shape: ArrayShape(shape)
-        )
+        ))
     }
 }
 
