@@ -83,20 +83,23 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
     }
 
     @inlinable
-    public func withScalarSetter(_ body: (@escaping NDArray<Scalar>.ScalarSetter) -> Void) {
-        print("Before", data.value)
+    public mutating func withScalarSetter(_ body: (@escaping NDArray<Scalar>.ScalarSetter) -> Void) {
+        if isKnownUniquelyReferenced(&data) {
+            print("UNIQUE")
+        } else {
+            print("NOT UNIQUE")
+        }
         data.value.withUnsafeMutableBufferPointer { dataIn in
             var data = dataIn
             defer { dataIn = data }
 
-            body { indexer, value in
+            body { [self] indexer, value in
                 let (_, rectangularIndex) = indexer
                 let index = self.arrayShape.linearIndex(of: rectangularIndex)
 
                 data[index] = value
             }
         }
-        print("After", data.value)
     }
 
     @inlinable
@@ -197,10 +200,16 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
             .map { $0 is UnmodifiedDimension }
             .reduce(true) { $0 && $1 }
 
-        if !isKnownUniquelyReferenced(&data) || !allAreUnmodifiedlDimensions {
+        if !isKnownUniquelyReferenced(&data) {
             let cp: BaseNDArray = copy()
             data = cp.data
             arrayShape = cp.arrayShape
+        }
+
+        if !isKnownUniquelyReferenced(&data) {
+            print("AAA UNIQUE")
+        } else {
+            print("AAA NOT UNIQUE")
         }
 
         var ndarrayView = subscript_get(ranges)
@@ -210,9 +219,11 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
             (ndarrayView, ndarray) = broadcast(ndarrayView, and: ndarray)
         }
 
+        let ndarrayViewShape = ndarrayView.shape
+
         ndarrayView.withScalarSetter { viewScalarSetter in
             ndarray.withScalarGetter { ndarrayScalarGetter in
-                for index in indexSequence(range: 0 ..< nElements, shape: ndarrayView.shape) {
+                for index in indexSequence(range: 0 ..< nElements, shape: ndarrayViewShape) {
                     let value = ndarrayScalarGetter(index)
                     viewScalarSetter(index, value)
                 }
