@@ -194,7 +194,7 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
         }
     }
 
-    public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) {
+    public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) -> NDArray<Scalar> {
         var ndarray = ndarray
 
         var ndarrayView = subscript_get(ranges)
@@ -214,6 +214,8 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
                 }
             }
         }
+
+        return NDArray(self)
     }
 
     public func tiled(by repetitions: [Int]) -> NDArray<Scalar> {

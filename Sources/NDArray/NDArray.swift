@@ -17,7 +17,7 @@ public protocol NDArrayProtocol {
     var shape: [Int] { get }
 
     func subscript_get(_: [ArrayRange]) -> NDArray<Scalar>
-    mutating func subscript_set(_: [ArrayRange], _: NDArray<Scalar>) -> Void
+    mutating func subscript_set(_: [ArrayRange], _: NDArray<Scalar>) -> NDArray<Scalar>
     func linearIndex(at indexes: [Int]) -> Int
     func dataValue(at indexes: [Int]) -> Scalar
     func withScalarGetter(_: (@escaping ScalarGetter) -> Void)
@@ -104,11 +104,14 @@ public struct NDArray<Scalar>: NDArrayProtocol {
         anyNDArray.subscript_get(ranges)
     }
 
-    public mutating func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) {
+    public mutating func subscript_set(_ ranges: [ArrayRange], _ value: NDArray<Scalar>) -> NDArray<Scalar> {
         if !isKnownUniquelyReferenced(&anyNDArray) {
             self = anyNDArray.copy()
         }
-        anyNDArray.subscript_set(ranges, value)
+
+        self = anyNDArray.subscript_set(ranges, value)
+
+        return self
     }
 
     public func linearIndex(at indexes: [Int]) -> Int {
@@ -154,7 +157,7 @@ public class AnyNDArray<Scalar> {
     let linearIndex: ([Int]) -> Int
     let dataValue: ([Int]) -> Scalar
     let subscript_get: ([ArrayRange]) -> NDArray<Scalar>
-    let subscript_set: ([ArrayRange], NDArray<Scalar>) -> Void
+    let subscript_set: ([ArrayRange], NDArray<Scalar>) -> NDArray<Scalar>
     let withScalarGetter: ((@escaping NDArray<Scalar>.ScalarGetter) -> Void) -> Void
     let withScalarSetter: ((@escaping NDArray<Scalar>.ScalarSetter) -> Void) -> Void
     let transposed: ([Int]) -> NDArray<Scalar>

@@ -28,7 +28,7 @@ extension NDArray {
         }
 
         mutating set(ndarray) {
-            subscript_set(ranges, ndarray)
+            self = subscript_set(ranges, ndarray)
         }
     }
 }

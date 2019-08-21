@@ -68,19 +68,25 @@ public struct ScalarNDArray<Scalar>: NDArrayProtocol {
         ))
     }
 
-    public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) {
-        data = ndarray.scalarized()
-        // if shape.isEmpty, ranges.isEmpty {
-        //     data = ndarray.scalarized()
-        // } else
+    public mutating func subscript_set(_ ranges: [ArrayRange], _ ndarray: NDArray<Scalar>) -> NDArray<Scalar> {
+        if shape.isEmpty, ranges.isEmpty {
+            data = ndarray.scalarized()
+            return NDArray(self)
+        }
 
-        // if shape == [1], ranges.count == 1 {
-        //     let range = ranges[0]
+        let ndarrayView = subscript_get(ranges)
 
-        //     data = ndarray.scalarized()
-        // } else {
-        //     return NDArray(getBase())
-        // }
+        if ndarrayView.shape.isEmpty, ndarrayView.shape == [1] {
+            data = ndarray.scalarized()
+            return NDArray(self)
+        }
+
+        var ndarrayBase = ndarrayView.getBase()
+
+        return ndarrayBase.subscript_set(
+            [.all],
+            ndarray
+        )
     }
 
     public func linearIndex(at indexes: [Int]) -> Int {
