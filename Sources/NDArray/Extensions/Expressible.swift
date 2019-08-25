@@ -34,6 +34,7 @@ extension _NDArrayElementLiteral: ExpressibleByIntegerLiteral
 extension _NDArrayElementLiteral: ExpressibleByFloatLiteral
     where Scalar: ExpressibleByFloatLiteral {
     public typealias FloatLiteralType = Scalar.FloatLiteralType
+
     @inlinable
     public init(floatLiteral: FloatLiteralType) {
         array = [Scalar(floatLiteral: floatLiteral)]

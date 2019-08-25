@@ -1,5 +1,9 @@
 
 extension NDArray where Scalar: AdditiveArithmetic {
+    public func sum(axis: Int) -> NDArray<Scalar> {
+        sum(axis: [axis])
+    }
+
     public func sum(axis: [Int]) -> NDArray<Scalar> {
         let outputShape = shape
             .enumerated()

@@ -611,6 +611,48 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(b.scalarized(), 110)
     }
 
+    func testMean1() {
+        let a: NDArray<Float> = [
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ]
+
+        let b = a.mean(
+            axis: [0]
+        )
+
+        XCTAssertEqual(b.shape, [4])
+        XCTAssertEqual(b.baseCopy().data.value, [11 / 2, 22 / 2, 33 / 2, 44 / 2] as [Float])
+    }
+
+    func testMean2() {
+        let a: NDArray<Float> = [
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ]
+
+        let b = a.mean(
+            axis: [1]
+        )
+
+        XCTAssertEqual(b.shape, [2])
+        XCTAssertEqual(b.baseCopy().data.value, [10 / 4, 100 / 4] as [Float])
+    }
+
+    func testMean3() {
+        let a = NDArray<Float>([[Float]]([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ]))
+
+        let b = a.mean(
+            axis: [0, 1]
+        )
+
+        XCTAssertEqual(b.shape, [])
+        XCTAssertEqual(b.scalarized(), 110 / 8)
+    }
+
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApply2D", testElementWiseApply2D),
@@ -653,5 +695,9 @@ final class NDArrayTests: XCTestCase {
         ("testReduce3", testReduce3),
         ("testSum1", testSum1),
         ("testSum2", testSum2),
+        ("testSum3", testSum3),
+        ("testMean1", testMean1),
+        ("testMean2", testMean2),
+        ("testMean3", testMean3),
     ]
 }
