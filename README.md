@@ -103,7 +103,8 @@ The third goal is what you would expect from any HPC numeric library, the strate
 - [x] Pretty Print
 - [x] Elementwise Operations
 - [x] Basic Operators: `+`, `-`, `*`, `\`
-- [ ] Reduction Operations
+- [x] Reduction Operations (reduce, sum, mean, max, min)
+- [ ] Concatenation Operations (concat, stack, hstack, vstack)
 - [ ] Subscript Bound Checks
 - [ ] Fancy Indexing
 - [ ] > 95% Coverage
