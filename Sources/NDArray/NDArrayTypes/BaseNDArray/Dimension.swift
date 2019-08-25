@@ -1,18 +1,18 @@
 import Foundation
 
-public struct MemoryLayout {
-    public let stride: Int
-    public let length: Int
+// public struct MemoryLayout {
+//     public let stride: Int
+//     public let length: Int
 
-    fileprivate init(length: Int, stride: Int) {
-        self.stride = stride
-        self.length = length
-    }
-}
+//     fileprivate init(length: Int, stride: Int) {
+//         self.stride = stride
+//         self.length = length
+//     }
+// }
 
 public protocol DimensionProtocol {
     var length: Int { get }
-    var memory_layout: MemoryLayout { get }
+    // var memory_stride: Int { get }
 
     @inlinable
     func linearIndex(of: Int) -> Int
@@ -21,20 +21,20 @@ public protocol DimensionProtocol {
 // public protocol SqueezedDimension: DimensionProtocol {}
 public protocol UnmodifiedDimension: DimensionProtocol {}
 
-extension DimensionProtocol {
-    @inlinable
-    public func strideValue(of index: Int) -> Int {
-        linearIndex(of: index) * memory_layout.stride
-    }
-}
+// extension DimensionProtocol {
+//     @inlinable
+//     public func strideValue(of index: Int) -> Int {
+//         // linearIndex(of: index) * memory_stride
+//     }
+// }
 
 public struct Dimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int
-    public let memory_layout: MemoryLayout
+    // public let memory_stride: Int
 
-    public init(length: Int, memory_stride: Int) {
+    public init(length: Int) {
         self.length = length
-        memory_layout = MemoryLayout(length: length, stride: memory_stride)
+        // self.memory_stride = memory_stride
     }
 
     @inlinable
@@ -43,10 +43,10 @@ public struct Dimension: DimensionProtocol, UnmodifiedDimension {
 
 public struct SingularDimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int = 1
-    public let memory_layout: MemoryLayout
+    // public let memory_stride: Int
 
     public init() {
-        memory_layout = MemoryLayout(length: 1, stride: 0)
+        // memory_stride = 0
     }
 
     @inlinable
@@ -61,7 +61,7 @@ public struct SlicedDimension: DimensionProtocol {
     public let start: Int
     public let end: Int
 
-    public var memory_layout: MemoryLayout
+    // public var memory_stride: Int
 
     fileprivate init(base: DimensionProtocol, start: Int, end: Int, stride: Int) {
         self.base = base
@@ -75,7 +75,7 @@ public struct SlicedDimension: DimensionProtocol {
             length = (abs(end - start) / abs(stride))
         }
 
-        memory_layout = base.memory_layout
+        // memory_stride = base.memory_stride
     }
 
     @inlinable
@@ -84,37 +84,37 @@ public struct SlicedDimension: DimensionProtocol {
     }
 }
 
-public struct InvertedDimension: DimensionProtocol {
-    public let base: DimensionProtocol
-    public let length: Int
+// public struct InvertedDimension: DimensionProtocol {
+//     public let base: DimensionProtocol
+//     public let length: Int
 
-    public var memory_layout: MemoryLayout
+//     public var memory_stride: Int
 
-    fileprivate init(base: DimensionProtocol) {
-        self.base = base
+//     fileprivate init(base: DimensionProtocol) {
+//         self.base = base
 
-        length = base.length
-        memory_layout = base.memory_layout
-    }
+//         length = base.length
+//         memory_stride = base.memory_stride
+//     }
 
-    @inlinable
-    public func linearIndex(of index: Int) -> Int {
-        base.linearIndex(of: length - 1 - index)
-    }
-}
+//     @inlinable
+//     public func linearIndex(of index: Int) -> Int {
+//         base.linearIndex(of: length - 1 - index)
+//     }
+// }
 
 public struct TiledDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public var length: Int
     public var repetitions: Int
-    public var memory_layout: MemoryLayout
+    // public var memory_stride: Int
 
     fileprivate init(base: DimensionProtocol, repetitions: Int) {
         self.base = base
         self.repetitions = repetitions
 
         length = base.length * repetitions
-        memory_layout = base.memory_layout
+        // memory_stride = base.memory_stride
     }
 
     @inlinable
@@ -126,7 +126,7 @@ public struct TiledDimension: DimensionProtocol {
 public struct FilteredDimension: DimensionProtocol {
     public let base: DimensionProtocol
     public var length: Int
-    public var memory_layout: MemoryLayout
+    // public var memory_stride: Int
     public var indexes: [Int]
 
     fileprivate init(base: DimensionProtocol, indexes: [Int]) {
@@ -136,7 +136,7 @@ public struct FilteredDimension: DimensionProtocol {
         }
 
         length = indexes.count
-        memory_layout = base.memory_layout
+        // memory_stride = base.memory_stride
     }
 
     @inlinable

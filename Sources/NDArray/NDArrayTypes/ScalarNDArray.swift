@@ -24,7 +24,7 @@ public struct ScalarNDArray<Scalar>: NDArrayProtocol {
                     continue
                 }
 
-                shape[i] = Dimension(length: shape[i], memory_stride: 0)
+                shape[i] = Dimension(length: shape[i])
                     .sliced(
                         start: start,
                         end: end,

@@ -12,7 +12,7 @@ NDArray is a multidimensional array library written in Swift that aims to become
 
 Tutorial | Last Updated |
 -------- | ------------ |
-[Basic API](https://colab.research.google.com/drive/1aULWtrtj6WsNeJe_vBnr_hswy0JIYDt_) | August 13 2019 |
+[Basic API](https://colab.research.google.com/drive/1aULWtrtj6WsNeJe_vBnr_hswy0JIYDt_) | August 2019 |
 
 
 ## Installation
@@ -92,6 +92,7 @@ The third goal is what you would expect from any HPC numeric library, the strate
 
 ## Roadmap
 ##### 0.1: Basic API
+- [x] NDArrayProtocol
 - [x] Indexing
 - [x] Dimension Slicing
 - [x] Dimension Filtering by Indexes

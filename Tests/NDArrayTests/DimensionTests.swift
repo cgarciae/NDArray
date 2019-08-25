@@ -18,11 +18,9 @@ final class DimensionTests: XCTestCase {
 
         let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
-        let realCount = dimension.memory_layout.length
 
         XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
-        XCTAssertEqual(realCount, 1)
     }
 
     func testVirualStrided() {
@@ -30,11 +28,9 @@ final class DimensionTests: XCTestCase {
 
         let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
-        let realCount = dimension.memory_layout.length
 
         XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 4)
-        XCTAssertEqual(realCount, 1)
     }
 
     func testVirualStridedMultiple() {
@@ -42,11 +38,9 @@ final class DimensionTests: XCTestCase {
 
         let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
-        let realCount = dimension.memory_layout.length
 
         XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 2)
-        XCTAssertEqual(realCount, 1)
     }
 
     func testVirualStridedMultiple2() {
@@ -54,11 +48,9 @@ final class DimensionTests: XCTestCase {
 
         let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
-        let realCount = dimension.memory_layout.length
 
         XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
-        XCTAssertEqual(realCount, 1)
     }
 
     func testVirualStridedMultiple3() {
@@ -66,11 +58,9 @@ final class DimensionTests: XCTestCase {
 
         let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
-        let realCount = dimension.memory_layout.length
 
         XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
-        XCTAssertEqual(realCount, 1)
     }
 
     func testVirualStridedMultiple4() {
@@ -78,11 +68,9 @@ final class DimensionTests: XCTestCase {
 
         let linearIndex = dimension.linearIndex(of: 1)
         let count = dimension.length
-        let realCount = dimension.memory_layout.length
 
         XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 3)
-        XCTAssertEqual(realCount, 1)
     }
 
     func testVirualStridedMultiple5() {
@@ -90,11 +78,9 @@ final class DimensionTests: XCTestCase {
 
         let linearIndex = dimension.linearIndex(of: 0)
         let count = dimension.length
-        let realCount = dimension.memory_layout.length
 
         XCTAssertEqual(linearIndex, 0)
         XCTAssertEqual(count, 1)
-        XCTAssertEqual(realCount, 1)
     }
 
     func testVirualEmpty2() {
@@ -113,14 +99,14 @@ final class DimensionTests: XCTestCase {
         XCTAssertEqual(total, 33)
     }
 
-    func testShapeInit() {
-        let shape = ArrayShape([5, 1, 4, 2])
+    // func testShapeInit() {
+    //     let shape = ArrayShape([5, 1, 4, 2])
 
-        XCTAssertEqual(
-            shape.dimensions.map { $0.memory_layout.stride },
-            [8, 0, 2, 1]
-        )
-    }
+    //     XCTAssertEqual(
+    //         shape.dimensions.map { $0.length },
+    //         [8, 0, 2, 1]
+    //     )
+    // }
 
     static var allTests = [
         ("testVirualEmpty", testVirualEmpty),
@@ -133,6 +119,6 @@ final class DimensionTests: XCTestCase {
         ("testVirualStridedMultiple5", testVirualStridedMultiple5),
         ("testVirualEmpty2", testVirualEmpty2),
         ("testScan", testScan),
-        ("testShapeInit", testShapeInit),
+        // ("testShapeInit", testShapeInit),
     ]
 }

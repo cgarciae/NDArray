@@ -3,13 +3,16 @@
 public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
     public var data: Ref<[Scalar]>
     public var arrayShape: ArrayShape
-
-    public var shape: [Int] { arrayShape.dimensionLengths }
+    public var memory_strides: [Int]
+    public var memory_offset: Int
+    public var shape: [Int] { arrayShape.shape }
 
     @inlinable
-    public init(_ data: Ref<[Scalar]>, shape: ArrayShape) {
+    public init(_ data: Ref<[Scalar]>, shape: ArrayShape, memory_offset: Int, memory_strides: [Int]?) {
         self.data = data
+        self.memory_offset = memory_offset
         arrayShape = shape
+        self.memory_strides = memory_strides ?? getDimensionStrides(of: shape.shape)
     }
 
     // public init(_ data: [Any], shape: [Int]? = nil) {
@@ -44,7 +47,17 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
 
     @inlinable
     public func linearIndex(at indexes: UnsafeMutableBufferPointer<Int>) -> Int {
-        arrayShape.linearIndex(of: indexes)
+        var partialIndex = 0
+
+        for i in 0 ..< indexes.count {
+            let index = indexes[i]
+            let dimension = arrayShape.dimensions[i]
+            let memory_stride = memory_strides[i]
+
+            partialIndex += dimension.linearIndex(of: index) * memory_stride
+        }
+
+        return partialIndex + memory_offset
     }
 
     @inlinable
@@ -59,7 +72,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
     @inlinable
     public func dataValue(at indexes: UnsafeMutableBufferPointer<Int>) -> Scalar {
         return data.value[
-            arrayShape.linearIndex(of: indexes)
+            linearIndex(at: indexes)
         ]
     }
 
@@ -77,7 +90,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
         data.value.withUnsafeBufferPointer { data in
 
             body { _, rectIndex in
-                let index = self.arrayShape.linearIndex(of: rectIndex)
+                let index = self.linearIndex(at: rectIndex)
                 return data[index]
             }
         }
@@ -91,7 +104,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
 
             body { [self] indexer, value in
                 let (_, rectangularIndex) = indexer
-                let index = self.arrayShape.linearIndex(of: rectangularIndex)
+                let index = self.linearIndex(at: rectangularIndex)
 
                 data[index] = value
             }
@@ -105,7 +118,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
             defer { dataIn = data }
 
             body { [self] index, f in
-                let index = self.arrayShape.linearIndex(of: index.1)
+                let index = self.linearIndex(at: index.1)
                 let value = f(data[index])
 
                 data[index] = value
@@ -135,7 +148,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
         precondition(shape.count >= ranges.count)
 
         var dimensions = arrayShape.dimensions
-        var linearMemoryOffset = arrayShape.linearMemoryOffset
+        var linearMemoryOffset = memory_offset
         var dimensionToBeRemoved = [Int]()
         var dimensionToBeAdded = [Int: DimensionProtocol]()
 
@@ -144,7 +157,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
             case let .index(index):
                 let index = index < 0 ? dimensions[i].length + index : index
 
-                linearMemoryOffset += dimensions[i].strideValue(of: index)
+                linearMemoryOffset += dimensions[i].linearIndex(of: index) * memory_strides[i]
                 dimensionToBeRemoved.append(i)
 
             case let .slice(start: start, end: end, stride: stride):
@@ -169,7 +182,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
                     "Cannot squeeze dimension \(i) of \(shape), expected 1 got \(shape[i])"
                 )
 
-                linearMemoryOffset += dimensions[i].strideValue(of: 0)
+                linearMemoryOffset += dimensions[i].linearIndex(of: 0) * memory_strides[i]
                 dimensionToBeRemoved.append(i)
 
             case .newAxis:
@@ -195,9 +208,10 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
         let ndarray = BaseNDArray(
             data,
             shape: ArrayShape(
-                dimensions,
-                linearMemoryOffset: linearMemoryOffset
-            )
+                dimensions
+            ),
+            memory_offset: linearMemoryOffset,
+            memory_strides: memory_strides
         )
 
         if ndarray.shape.isEmpty {
@@ -250,9 +264,10 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
         return NDArray(BaseNDArray(
             data,
             shape: ArrayShape(
-                dimensions,
-                linearMemoryOffset: arrayShape.linearMemoryOffset
-            )
+                dimensions
+            ),
+            memory_offset: memory_offset,
+            memory_strides: memory_strides
         ))
     }
 
@@ -264,9 +279,10 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
         return NDArray(BaseNDArray(
             data,
             shape: ArrayShape(
-                dimensions,
-                linearMemoryOffset: arrayShape.linearMemoryOffset
-            )
+                dimensions
+            ),
+            memory_offset: memory_offset,
+            memory_strides: memory_strides
         ))
     }
 
@@ -291,7 +307,9 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
 
         return NDArray(BaseNDArray(
             Ref(arrayC),
-            shape: ArrayShape(shape)
+            shape: ArrayShape(shape),
+            memory_offset: 0,
+            memory_strides: nil
         ))
     }
 
@@ -301,9 +319,10 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
         return NDArray(BaseNDArray(
             data,
             shape: ArrayShape(
-                indexes.map { i in arrayShape.dimensions[i] },
-                linearMemoryOffset: arrayShape.linearMemoryOffset
-            )
+                indexes.map { i in arrayShape.dimensions[i] }
+            ),
+            memory_offset: memory_offset,
+            memory_strides: indexes.map { i in memory_strides[i] }
         ))
     }
 }
@@ -324,7 +343,9 @@ extension NDArrayProtocol {
 
         return BaseNDArray(
             Ref(arrayC),
-            shape: ArrayShape(shape)
+            shape: ArrayShape(shape),
+            memory_offset: 0,
+            memory_strides: nil
         )
     }
 }

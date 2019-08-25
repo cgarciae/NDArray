@@ -41,7 +41,12 @@ public struct NDArray<Scalar> {
         let data = Ref(flatData)
         let arrayShape = ArrayShape(shape ?? calculatedShape)
 
-        self = NDArray(BaseNDArray(data, shape: arrayShape))
+        self = NDArray(BaseNDArray(
+            data,
+            shape: arrayShape,
+            memory_offset: 0,
+            memory_strides: nil
+        ))
     }
 
     public init(_ data: Scalar) {
