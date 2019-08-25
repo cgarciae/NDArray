@@ -653,6 +653,90 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(b.scalarized(), 110 / 8)
     }
 
+    func testMax1() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.max(
+            axis: [0]
+        )
+
+        XCTAssertEqual(b.shape, [4])
+        XCTAssertEqual(b.baseCopy().data.value, [10, 20, 30, 40])
+    }
+
+    func testMax2() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.max(
+            axis: [1]
+        )
+
+        XCTAssertEqual(b.shape, [2])
+        XCTAssertEqual(b.baseCopy().data.value, [4, 40])
+    }
+
+    func testMax3() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.max(
+            axis: [0, 1]
+        )
+
+        XCTAssertEqual(b.shape, [])
+        XCTAssertEqual(b.scalarized(), 40)
+    }
+
+    func testMin1() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.min(
+            axis: [0]
+        )
+
+        XCTAssertEqual(b.shape, [4])
+        XCTAssertEqual(b.baseCopy().data.value, [1, 2, 3, 4])
+    }
+
+    func testMin2() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.min(
+            axis: [1]
+        )
+
+        XCTAssertEqual(b.shape, [2])
+        XCTAssertEqual(b.baseCopy().data.value, [1, 10])
+    }
+
+    func testMin3() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.min(
+            axis: [0, 1]
+        )
+
+        XCTAssertEqual(b.shape, [])
+        XCTAssertEqual(b.scalarized(), 1)
+    }
+
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApply2D", testElementWiseApply2D),
@@ -699,5 +783,11 @@ final class NDArrayTests: XCTestCase {
         ("testMean1", testMean1),
         ("testMean2", testMean2),
         ("testMean3", testMean3),
+        ("testMax1", testMax1),
+        ("testMax2", testMax2),
+        ("testMax3", testMax3),
+        ("testMin1", testMin1),
+        ("testMin2", testMin2),
+        ("testMin3", testMin3),
     ]
 }

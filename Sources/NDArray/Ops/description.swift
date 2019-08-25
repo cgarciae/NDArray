@@ -2,7 +2,7 @@
 extension NDArray: CustomStringConvertible {
     public var description: String {
         let nElements = shape.product()
-        var s = "\(Self.self)\(shape)(" + String(repeating: "[", count: max(shape.count - 1, 0))
+        var s = "\(Self.self)\(shape)(" + String(repeating: "[", count: Swift.max(shape.count - 1, 0))
 
         withScalarGetter { valueAt in
 
@@ -40,7 +40,7 @@ extension NDArray: CustomStringConvertible {
                         arrayString += "\(valueAt(index))" + ((i + 1) % lastDim != 0 ? ", " : "")
                     }
                 }
-                s += String(repeating: "]", count: max(self.shape.count - 1, 1)) + ")"
+                s += String(repeating: "]", count: Swift.max(self.shape.count - 1, 1)) + ")"
             }
         }
 

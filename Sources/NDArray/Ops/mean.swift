@@ -1,9 +1,9 @@
 
 
 extension NDArray where Scalar: FloatingPoint & Numeric {
-    // public func mean(axis: Int) -> NDArray<Scalar> {
-    //     mean(axis: [axis])
-    // }
+    public func mean(axis: Int) -> NDArray<Scalar> {
+        mean(axis: [axis])
+    }
 
     public func mean(axis: [Int]) -> NDArray<Scalar> {
         let outputShape = shape
