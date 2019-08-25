@@ -533,6 +533,7 @@ final class NDArrayTests: XCTestCase {
             f: +
         )
 
+        XCTAssertEqual(b.shape, [4])
         XCTAssertEqual(b.baseCopy().data.value, [11, 22, 33, 44])
     }
 
@@ -548,6 +549,7 @@ final class NDArrayTests: XCTestCase {
             f: +
         )
 
+        XCTAssertEqual(b.shape, [2])
         XCTAssertEqual(b.baseCopy().data.value, [10, 100])
     }
 
@@ -559,11 +561,54 @@ final class NDArrayTests: XCTestCase {
 
         let b = a.reduce(
             axis: [0, 1],
-            initial: NDArray<Int>([0]),
+            initial: NDArray<Int>(0),
             f: +
         )
 
-        XCTAssertEqual(b.baseCopy().data.value, [110])
+        XCTAssertEqual(b.shape, [])
+        XCTAssertEqual(b.scalarized(), 110)
+    }
+
+    func testSum1() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.sum(
+            axis: [0]
+        )
+
+        XCTAssertEqual(b.shape, [4])
+        XCTAssertEqual(b.baseCopy().data.value, [11, 22, 33, 44])
+    }
+
+    func testSum2() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.sum(
+            axis: [1]
+        )
+
+        XCTAssertEqual(b.shape, [2])
+        XCTAssertEqual(b.baseCopy().data.value, [10, 100])
+    }
+
+    func testSum3() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.sum(
+            axis: [0, 1]
+        )
+
+        XCTAssertEqual(b.shape, [])
+        XCTAssertEqual(b.scalarized(), 110)
     }
 
     static var allTests = [
@@ -606,5 +651,7 @@ final class NDArrayTests: XCTestCase {
         ("testReduce1", testReduce1),
         ("testReduce2", testReduce2),
         ("testReduce3", testReduce3),
+        ("testSum1", testSum1),
+        ("testSum2", testSum2),
     ]
 }

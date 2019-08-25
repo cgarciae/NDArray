@@ -271,7 +271,7 @@ public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
     }
 
     public func scalarized() -> Scalar {
-        precondition(shape == [], "Cannot convert non-scalar NDArray to scalar, got shape \(shape)")
+        precondition(shape == [] || shape == [1], "Cannot convert non-scalar NDArray to scalar, got shape \(shape)")
 
         return dataValue(at: [])
     }
