@@ -127,6 +127,35 @@ public func elementwise<A, B, Z>(
 }
 
 @inlinable
+public func elementwiseAssignApply<A, B>(
+    _ ndArrayA: inout NDArray<A>,
+    _ ndArrayB: NDArray<B>,
+    apply f: (A, B) -> A
+) {
+    var ndArrayB = ndArrayB
+
+    if ndArrayA.shape != ndArrayB.shape {
+        (ndArrayA, ndArrayB) = broadcast(ndArrayA, and: ndArrayB)
+    }
+
+    let nElements = ndArrayA.shape.product()
+
+    let ndArrayAShape = ndArrayA.shape
+
+    ndArrayA.withScalarGetterSetter { aGetterSetter in
+        ndArrayB.withScalarGetter { bGetter in
+
+            for index in indexSequence(range: 0 ..< nElements, shape: ndArrayAShape) {
+                aGetterSetter(index) { aValue in
+                    let value = f(aValue, bGetter(index))
+                    return value
+                }
+            }
+        }
+    }
+}
+
+@inlinable
 public func elementwise<A, B, Z>(
     _ ndArrayA: NDArray<A>,
     _ ndArrayB: NDArray<B>,
@@ -163,6 +192,10 @@ public func elementwiseInParallel<A, B, Z>(
 ) {
     precondition(ndArrayA.shape == ndArrayB.shape)
     let nElements = ndArrayA.shape.product()
+
+    if !ndArrayZ.anyNDArray.isSetable() {
+        ndArrayZ = NDArray(ndArrayZ.baseCopy())
+    }
 
     ndArrayZ.withScalarSetter { zSetter in
         ndArrayA.withScalarGetter { aGetter in

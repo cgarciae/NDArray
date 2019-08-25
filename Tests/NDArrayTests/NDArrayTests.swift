@@ -367,7 +367,7 @@ final class NDArrayTests: XCTestCase {
         a[0..] = [1, 1, 1, 1]
         b[0..] = [2, 2, 2, 2]
 
-        var d = c[0..]
+        let d = c[0..]
 
         c[0..] = NDArray(10)
 
@@ -521,6 +521,51 @@ final class NDArrayTests: XCTestCase {
         XCTAssertEqual(b.baseCopy().data.value, [1, 2, 5])
     }
 
+    func testReduce1() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.reduce(
+            axis: [0],
+            initial: NDArray<Int>([0, 0, 0, 0]),
+            f: +
+        )
+
+        XCTAssertEqual(b.baseCopy().data.value, [11, 22, 33, 44])
+    }
+
+    func testReduce2() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.reduce(
+            axis: [1],
+            initial: NDArray<Int>([0, 0]),
+            f: +
+        )
+
+        XCTAssertEqual(b.baseCopy().data.value, [10, 100])
+    }
+
+    func testReduce3() {
+        let a = NDArray<Int>([
+            [1, 2, 3, 4],
+            [10, 20, 30, 40],
+        ])
+
+        let b = a.reduce(
+            axis: [0, 1],
+            initial: NDArray<Int>([0]),
+            f: +
+        )
+
+        XCTAssertEqual(b.baseCopy().data.value, [110])
+    }
+
     static var allTests = [
         ("testElementWiseApply", testElementWiseApply),
         ("testElementWiseApply2D", testElementWiseApply2D),
@@ -558,5 +603,8 @@ final class NDArrayTests: XCTestCase {
         ("testNegativeIndex", testNegativeIndex),
         ("testFilter", testFilter),
         ("testFilter2", testFilter2),
+        ("testReduce1", testReduce1),
+        ("testReduce2", testReduce2),
+        ("testReduce3", testReduce3),
     ]
 }

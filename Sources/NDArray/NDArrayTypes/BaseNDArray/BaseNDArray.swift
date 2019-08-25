@@ -1,5 +1,6 @@
 
-public struct BaseNDArray<Scalar> :NDArrayProtocol {
+
+public struct BaseNDArray<Scalar>: NDArrayProtocol, SetableNDArray {
     public var data: Ref<[Scalar]>
     public var arrayShape: ArrayShape
 
@@ -91,6 +92,21 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
             body { [self] indexer, value in
                 let (_, rectangularIndex) = indexer
                 let index = self.arrayShape.linearIndex(of: rectangularIndex)
+
+                data[index] = value
+            }
+        }
+    }
+
+    @inlinable
+    public mutating func withScalarGetterSetter(_ body: (@escaping NDArray<Scalar>.ScalarGetterSetter) -> Void) {
+        data.value.withUnsafeMutableBufferPointer { dataIn in
+            var data = dataIn
+            defer { dataIn = data }
+
+            body { [self] index, f in
+                let index = self.arrayShape.linearIndex(of: index.1)
+                let value = f(data[index])
 
                 data[index] = value
             }
@@ -259,14 +275,6 @@ public struct BaseNDArray<Scalar> :NDArrayProtocol {
 
         return dataValue(at: [])
     }
-
-    // public mutating func copyInternals() {
-    //     if !isKnownUniquelyReferenced(&data) {
-    //         let cp: BaseNDArray = copy()
-    //         data = cp.data
-    //         arrayShape = cp.arrayShape
-    //     }
-    // }
 
     public func copy() -> NDArray<Scalar> {
         let nElements = shape.product()

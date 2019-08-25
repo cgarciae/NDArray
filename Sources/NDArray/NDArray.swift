@@ -1,60 +1,11 @@
-public protocol MultiArray {
-    associatedtype Element
 
-    var array: [Element] { get }
-}
 
-extension Array : MultiArray {
-    public var array: [Element] { self }
-}
-
-public protocol NDArrayProtocol {
-    associatedtype Scalar
-
-    typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
-    typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
-
-    var shape: [Int] { get }
-
-    func subscript_get(_: [ArrayRange]) -> NDArray<Scalar>
-    mutating func subscript_set(_: [ArrayRange], _: NDArray<Scalar>) -> NDArray<Scalar>
-    func linearIndex(at indexes: [Int]) -> Int
-    func dataValue(at indexes: [Int]) -> Scalar
-    func withScalarGetter(_: (@escaping ScalarGetter) -> Void)
-    mutating func withScalarSetter(_: (@escaping ScalarSetter) -> Void)
-
-    // ops
-    func transposed(_: [Int]) -> NDArray<Scalar>
-    func tiled(by: [Int]) -> NDArray<Scalar>
-    func expandDimensions(axis: Int) -> NDArray<Scalar>
-    func scalarized() -> Scalar
-
-    //
-    func toArray<T: MultiArray>(_: T.Type) -> T
-
-    //
-    // mutating func copyInternals() -> Void
-    func copy() -> NDArray<Scalar>
-}
-
-extension NDArrayProtocol {
-    public func toArray<T: MultiArray>(_: T.Type) -> T {
-        let cp: BaseNDArray = baseCopy()
-        var array: [Any] = cp.data.value
-
-        for n in cp.shape.reversed().dropLast() {
-            array = array.chunked(into: n) as [Any]
-        }
-
-        return array as! T
-    }
-}
-
-public struct NDArray<Scalar>: NDArrayProtocol {
+public struct NDArray<Scalar> {
     public let shape: [Int]
 
     public typealias ScalarGetter = ((Int, UnsafeMutableBufferPointer<Int>)) -> Scalar
     public typealias ScalarSetter = ((Int, UnsafeMutableBufferPointer<Int>), Scalar) -> Void
+    public typealias ScalarGetterSetter = ((Int, UnsafeMutableBufferPointer<Int>), (Scalar) -> Scalar) -> Void
 
     public var anyNDArray: AnyNDArray<Scalar>
 
@@ -130,6 +81,10 @@ public struct NDArray<Scalar>: NDArrayProtocol {
         anyNDArray.withScalarSetter(body)
     }
 
+    public mutating func withScalarGetterSetter(_ body: (@escaping ScalarGetterSetter) -> Void) {
+        anyNDArray.withScalarGetterSetter(body)
+    }
+
     public func transposed(_ permutations: [Int]) -> NDArray<Scalar> {
         anyNDArray.transposed(permutations)
     }
@@ -149,6 +104,21 @@ public struct NDArray<Scalar>: NDArrayProtocol {
     public func copy() -> NDArray<Scalar> {
         NDArray(anyNDArray.copy())
     }
+
+    public func baseCopy() -> BaseNDArray<Scalar> {
+        anyNDArray.baseCopy()
+    }
+
+    public func toArray<T: MultiArray>(_: T.Type) -> T {
+        let cp: BaseNDArray = baseCopy()
+        var array: [Any] = cp.data.value
+
+        for n in cp.shape.reversed().dropLast() {
+            array = array.chunked(into: n) as [Any]
+        }
+
+        return array as! T
+    }
 }
 
 public class AnyNDArray<Scalar> {
@@ -160,11 +130,17 @@ public class AnyNDArray<Scalar> {
     let subscript_set: ([ArrayRange], NDArray<Scalar>) -> NDArray<Scalar>
     let withScalarGetter: ((@escaping NDArray<Scalar>.ScalarGetter) -> Void) -> Void
     let withScalarSetter: ((@escaping NDArray<Scalar>.ScalarSetter) -> Void) -> Void
+    let withScalarGetterSetter: ((@escaping NDArray<Scalar>.ScalarGetterSetter) -> Void) -> Void
     let transposed: ([Int]) -> NDArray<Scalar>
     let tiled: ([Int]) -> NDArray<Scalar>
     let expandDimensions: (Int) -> NDArray<Scalar>
     let scalarized: () -> Scalar
     let copy: () -> NDArray<Scalar>
+    let baseCopy: () -> BaseNDArray<Scalar>
+
+    //
+    @usableFromInline
+    let isSetable: () -> Bool
 
     public init<N: NDArrayProtocol>(_ ndarray: N) where N.Scalar == Scalar {
         var ndarray = ndarray
@@ -178,10 +154,13 @@ public class AnyNDArray<Scalar> {
         }
         withScalarGetter = { ndarray.withScalarGetter($0) }
         withScalarSetter = { ndarray.withScalarSetter($0) }
+        withScalarGetterSetter = { ndarray.withScalarGetterSetter($0) }
         transposed = { ndarray.transposed($0) }
         tiled = { ndarray.tiled(by: $0) }
         expandDimensions = { ndarray.expandDimensions(axis: $0) }
         scalarized = { ndarray.scalarized() }
         copy = { ndarray.copy() }
+        baseCopy = { ndarray.baseCopy() }
+        isSetable = { ndarray is SetableNDArray }
     }
 }

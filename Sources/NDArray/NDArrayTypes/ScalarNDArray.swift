@@ -81,12 +81,7 @@ public struct ScalarNDArray<Scalar>: NDArrayProtocol {
             return NDArray(self)
         }
 
-        var ndarrayBase = ndarrayView.baseCopy()
-
-        return ndarrayBase.subscript_set(
-            [.all],
-            ndarray
-        )
+        return NDArray(ndarrayView.baseCopy())
     }
 
     public func linearIndex(at indexes: [Int]) -> Int {
@@ -100,6 +95,15 @@ public struct ScalarNDArray<Scalar>: NDArrayProtocol {
     public func withScalarGetter(_ body: (@escaping NDArray<Scalar>.ScalarGetter) -> Void) {
         body { _, rectIndex in
             self.data
+        }
+    }
+
+    public mutating func withScalarGetterSetter(_ body: (@escaping NDArray<Scalar>.ScalarGetterSetter) -> Void) {
+        var data = self.data
+        defer { self.data = data }
+
+        body { indexer, f in
+            data = f(data)
         }
     }
 
