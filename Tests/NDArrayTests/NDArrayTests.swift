@@ -486,7 +486,7 @@ final class NDArrayTests: XCTestCase {
 
         let b = a[....-1]
 
-        XCTAssertEqual(a.baseCopy().data.value, b.baseCopy().data.value.reversed())
+        XCTAssertEqual(b.baseCopy().data.value, a.baseCopy().data.value.reversed())
     }
 
     func testNegativeStride3() {

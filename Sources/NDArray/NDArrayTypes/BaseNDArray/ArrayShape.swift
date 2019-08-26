@@ -58,23 +58,21 @@ public struct ArrayShape {
         precondition(shape.count >= ranges.count)
 
         var dimensions = self.dimensions
-        var dimensionToBeRemoved = [Int]()
-        var dimensionToBeAdded = [Int: DimensionProtocol]()
 
-        for (i, range) in ranges.enumerated() {
+        for (i, range) in ranges.enumerated().reversed() {
             switch range {
             case .index:
-                dimensionToBeRemoved.append(i)
+                dimensions.remove(at: i)
 
             case let .slice(start: start, end: end, stride: stride):
 
-                if start == 0, end == nil || end! == dimensions[i].length, stride == 1 {
+                if start == 0, end! == dimensions[i].length, stride == 1 {
                     continue
                 }
 
                 dimensions[i] = dimensions[i].sliced(
-                    start: start,
-                    end: end,
+                    start: start!,
+                    end: end!,
                     stride: stride
                 )
             case let .filter(indexes):
@@ -88,26 +86,14 @@ public struct ArrayShape {
                     "Cannot squeeze dimension \(i) of \(shape), expected 1 got \(shape[i])"
                 )
 
-                dimensionToBeRemoved.append(i)
+                dimensions.remove(at: i)
 
             case .newAxis:
-                dimensionToBeAdded[i] = SingularDimension()
+                dimensions.insert(SingularDimension(), at: i)
 
             case .ellipsis:
                 fatalError("Ellipsis should be expand as a series of .all expressions")
             }
-        }
-
-        // TODO: this implementation is not correct due the fact the the length of dimension is changing
-        // A correct way to implement this would be to do the operations sorted by the index
-        // from high to low.
-        dimensions = dimensions
-            .enumerated()
-            .filter { i, d in !dimensionToBeRemoved.contains(i) }
-            .map { i, d in d }
-
-        for (i, dimension) in dimensionToBeAdded {
-            dimensions.insert(dimension, at: i)
         }
 
         return ArrayShape(dimensions)

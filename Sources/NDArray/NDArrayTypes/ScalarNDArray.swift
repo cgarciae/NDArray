@@ -1,66 +1,16 @@
 public struct ScalarNDArray<Scalar>: NDArrayProtocol {
     public var data: Scalar
-    public let shape: [Int]
+    public let arrayShape: ArrayShape
+    public var shape: [Int] { arrayShape.shape }
 
     @inlinable
     public init(_ data: Scalar, shape: [Int]) {
         self.data = data
-        self.shape = shape
+        arrayShape = ArrayShape(shape)
     }
 
     public func subscript_get(_ ranges: [ArrayRange]) -> NDArray<Scalar> {
-        var shape = self.shape
-        var dimensionToBeRemoved = [Int]()
-        var dimensionToBeAdded = [Int: Int]()
-
-        for (i, range) in ranges.enumerated() {
-            switch range {
-            case .index:
-                dimensionToBeRemoved.append(i)
-
-            case let .slice(start: start, end: end, stride: stride):
-
-                if start == 0, end == nil || end! == shape[i], stride == 1 {
-                    continue
-                }
-
-                shape[i] = Dimension(length: shape[i])
-                    .sliced(
-                        start: start,
-                        end: end,
-                        stride: stride
-                    )
-                    .length
-
-            case let .filter(indexes):
-                shape[i] -= indexes.count
-
-            case .all:
-                continue
-            case .squeezeAxis:
-                precondition(
-                    shape[i] == 1,
-                    "Cannot squeeze dimension \(i) of \(shape), expected 1 got \(shape[i])"
-                )
-
-                dimensionToBeRemoved.append(i)
-
-            case .newAxis:
-                dimensionToBeAdded[i] = 1
-
-            case .ellipsis:
-                fatalError("Ellipsis should be expand as a series of .all expressions")
-            }
-        }
-
-        shape = shape
-            .enumerated()
-            .filter { i, d in !dimensionToBeRemoved.contains(i) }
-            .map { i, d in d }
-
-        for (i, dimension) in dimensionToBeAdded {
-            shape.insert(dimension, at: i)
-        }
+        let shape = arrayShape[ranges].shape
 
         return NDArray(ScalarNDArray(
             data,

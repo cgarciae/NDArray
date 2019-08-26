@@ -14,20 +14,82 @@ extension NDArray {
     @inlinable
     public subscript(_ ranges: ArrayExpression...) -> NDArray {
         get {
-            self[r: ranges.map { $0.arrayRange }]
+            self[r: ranges]
         }
         mutating set(ndarray) {
             self[r: ranges.map { $0.arrayRange }] = ndarray
         }
     }
 
+    public func processExpressions(_ ranges: [ArrayExpression]) -> [ArrayRange] {
+        var ranges = ranges.map { $0.arrayRange }
+
+        let nEllipsis = ranges.filter(isEllipsis).count
+
+        precondition(nEllipsis <= 1, "A maximum of 1 .ellipsis can be used, got \(ranges)")
+
+        if nEllipsis == 1 {
+            let ellipsisIndex = ranges.firstIndex(where: isEllipsis)!
+            let nAll = 1 + shape.count - ranges.count
+
+            ranges.remove(at: ellipsisIndex)
+
+            for _ in 0 ..< nAll {
+                ranges.insert(.all, at: ellipsisIndex)
+            }
+        }
+
+        ranges = ranges
+            .enumerated()
+            .map { i, range in
+                switch range {
+                case let .index(index):
+                    return .index(
+                        index < 0 ? shape[i] + index : index
+                    )
+                case let .slice(start: start, end: end, stride: stride):
+                    let length = shape[i]
+
+                    var start = start ?? (stride > 0 ? 0 : -1)
+                    var end = end ?? (stride > 0 ? length : 0)
+
+                    if start < 0 {
+                        start = length + start
+                    }
+                    if end < 0 {
+                        end = length + end
+                    }
+
+                    if stride < 0 {
+                        end -= 1
+                    }
+
+                    return .slice(start: start, end: end, stride: stride)
+
+                case let .filter(selected):
+                    let selected = selected.map { index in
+                        index < 0 ? shape[i] + index : index
+                    }
+
+                    return .filter(selected)
+
+                default:
+                    return range
+                }
+            }
+
+        return ranges
+    }
+
     @inlinable
-    public subscript(r ranges: [ArrayRange]) -> NDArray {
+    public subscript(r ranges: [ArrayExpression]) -> NDArray {
         get {
-            subscript_get(ranges)
+            let ranges = processExpressions(ranges)
+            return subscript_get(ranges)
         }
 
         mutating set(ndarray) {
+            let ranges = processExpressions(ranges)
             self = subscript_set(ranges, ndarray)
         }
     }

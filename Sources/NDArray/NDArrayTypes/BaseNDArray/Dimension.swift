@@ -21,13 +21,6 @@ public protocol DimensionProtocol {
 // public protocol SqueezedDimension: DimensionProtocol {}
 public protocol UnmodifiedDimension: DimensionProtocol {}
 
-// extension DimensionProtocol {
-//     @inlinable
-//     public func strideValue(of index: Int) -> Int {
-//         // linearIndex(of: index) * memory_stride
-//     }
-// }
-
 public struct Dimension: DimensionProtocol, UnmodifiedDimension {
     public let length: Int
     // public let memory_stride: Int
@@ -69,13 +62,19 @@ public struct SlicedDimension: DimensionProtocol {
         self.start = start
         self.end = end
 
-        if abs(end - start) % abs(stride) != 0 {
-            length = (1 + abs(end - start) / abs(stride))
-        } else {
-            length = (abs(end - start) / abs(stride))
+        // length = (1 + abs(end - start) / abs(stride))
+        switch abs(end - start).quotientAndRemainder(dividingBy: abs(stride)) {
+        case let (quotient, 0):
+            length = quotient
+        case let (quotient, _):
+            length = quotient + 1
         }
 
-        // memory_stride = base.memory_stride
+        // if abs(end - start) % abs(stride) != 0 {
+        //     length = (1 + abs(end - start) / abs(stride))
+        // } else {
+        //     length = (abs(end - start) / abs(stride))
+        // }
     }
 
     @inlinable
@@ -131,9 +130,7 @@ public struct FilteredDimension: DimensionProtocol {
 
     fileprivate init(base: DimensionProtocol, indexes: [Int]) {
         self.base = base
-        self.indexes = indexes.map { index in
-            index < 0 ? index + base.length : index
-        }
+        self.indexes = indexes
 
         length = indexes.count
         // memory_stride = base.memory_stride
@@ -146,21 +143,7 @@ public struct FilteredDimension: DimensionProtocol {
 }
 
 extension DimensionProtocol {
-    public func sliced(start: Int? = nil, end: Int? = nil, stride: Int = 1) -> DimensionProtocol {
-        var start = start ?? (stride > 0 ? 0 : -1)
-        var end = end ?? (stride > 0 ? length : 0)
-
-        if start < 0 {
-            start += length
-        }
-        if end < 0 {
-            end += length
-        }
-
-        if stride < 0 {
-            end -= 1
-        }
-
+    public func sliced(start: Int, end: Int, stride: Int) -> DimensionProtocol {
         return SlicedDimension(
             base: self,
             start: start,
